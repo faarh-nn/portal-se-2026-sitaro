@@ -21,8 +21,6 @@ return new class extends Migration
             $table->string('nama_desa')->nullable();
             $table->string('status_perusahaan')->nullable();
             $table->string('skala_usaha')->nullable();
-            $table->decimal('latitude', 10, 7)->nullable();
-            $table->decimal('longitude', 10, 7)->nullable();
             $table->timestamps();
         });
     }

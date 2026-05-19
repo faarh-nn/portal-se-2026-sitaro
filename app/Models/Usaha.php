@@ -17,12 +17,5 @@ class Usaha extends Model
         'nama_desa',
         'status_perusahaan',
         'skala_usaha',
-        'latitude',
-        'longitude',
-    ];
-
-    protected $casts = [
-        'latitude'  => 'float',
-        'longitude' => 'float',
     ];
 }
