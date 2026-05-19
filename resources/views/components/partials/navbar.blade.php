@@ -2,7 +2,7 @@
     <div class="navbar__container">
         <div class="navbar__brand-group">
             <a href="#" class="navbar__brand">
-                <img src="{{ asset('assets/img/logo-bps.png') }}" alt="Logo BPS" class="navbar__logo-img">
+                <img src="{{ asset('assets/img/logo-bps.svg') }}" alt="Logo BPS" class="navbar__logo-img">
                 <div class="navbar__brand-text">
                     <p class="navbar__brand-line1">BPS KABUPATEN</p>
                     <p class="navbar__brand-line2">KEPULAUAN SIAU TAGULANDANG BIARO</p>
@@ -12,7 +12,7 @@
             <div class="navbar__divider"></div>
 
             <a href="#" class="navbar__se-brand">
-                <img src="{{ asset('assets/img/logo-se-2026.png') }}" alt="Logo SE" class="navbar__se-logo-img">
+                <img src="{{ asset('assets/img/logo-se-2026.svg') }}" alt="Logo SE" class="navbar__se-logo-img">
                 <div class="navbar__se-text">
                     <p class="navbar__se-line1">SENSUS</p>
                     <p class="navbar__se-line2">EKONOMI</p>

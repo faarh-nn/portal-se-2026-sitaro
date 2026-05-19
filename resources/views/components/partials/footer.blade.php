@@ -3,20 +3,20 @@
         <div class="footer__grid">
             <div>
                 <a href="#" class="footer__brand">
-                    <img src="{{ asset('assets/img/logo-bps-white.png') }}" alt="Logo BPS" class="footer__logo-img">
+                    <img src="{{ asset('assets/img/logo-bps-white.svg') }}" alt="Logo BPS" class="footer__logo-img">
                     <div class="footer__brand-text">
                         <p class="footer__brand-line1">BPS KABUPATEN</p>
                         <p class="footer__brand-line2">KEPULAUAN SIAU TAGULANDANG BIARO</p>
                     </div>
                 </a>
                 <div class="footer__se-brand">
-                    <img src="{{ asset('assets/img/logo-se-2026-white.png') }}" alt="Logo SE" class="footer__se-logo-img">
+                    <img src="{{ asset('assets/img/logo-se-2026-white.svg') }}" alt="Logo SE" class="footer__se-logo-img">
                     <div class="footer__se-text">
                         <p class="footer__se-line1">SENSUS EKONOMI</p>
                         <p class="footer__se-line2">2026</p>
                     </div>
                 </div>
-                <img src="{{ asset('assets/img/berakhlak-white.png') }}" alt="Logo BerAKHLAK" class="footer__berakhlak-img">
+                <img src="{{ asset('assets/img/berakhlak-white.svg') }}" alt="Logo BerAKHLAK" class="footer__berakhlak-img">
             </div>
 
             <div>
