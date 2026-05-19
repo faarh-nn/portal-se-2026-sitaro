@@ -11,5 +11,6 @@
     <x-sections.tujuan-se />
     <x-sections.cakupan-kbli />
     <x-sections.timeline-kegiatan />
+    <x-sections.petugas-lapangan />
     <x-partials.footer />
 </x-layouts.app>

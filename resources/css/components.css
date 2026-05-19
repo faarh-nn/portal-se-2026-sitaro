@@ -60,9 +60,10 @@
     padding: 0;
 }
 
-html, body {
+html {
     width: 100%;
     height: 100%;
+    overflow-x: hidden;
 }
 
 body {
@@ -70,6 +71,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: var(--color-canvas);
+    overflow-x: hidden;
 }
 
 a {
@@ -342,6 +344,13 @@ ul, ol {
     transition: all 0.3s ease;
     padding: 12px 24px;
     border-radius: var(--rounded-pill);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.navbar__container::-webkit-scrollbar {
+    display: none;
 }
 
 .navbar--scrolled .navbar__container {
@@ -355,6 +364,7 @@ ul, ol {
     align-items: center;
     gap: 4px;
     flex-shrink: 0;
+    max-width: 100%;
 }
 
 @media (min-width: 768px) {
@@ -374,12 +384,22 @@ ul, ol {
     align-items: center;
     gap: 8px;
     text-decoration: none;
+    flex-shrink: 0;
+}
+
+.navbar__se-brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    flex-shrink: 0;
 }
 
 .navbar__logo-img {
     width: 48px;
     height: 48px;
     object-fit: contain;
+    flex-shrink: 0;
 }
 
 .navbar__logo-text {
@@ -516,9 +536,19 @@ ul, ol {
     display: block;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
     .navbar__mobile-menu {
         display: none !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .navbar__mobile-menu {
+        display: none;
+    }
+
+    .navbar__mobile-menu.is-active {
+        display: block;
     }
 }
 
@@ -542,9 +572,14 @@ ul, ol {
     gap: var(--spacing-sm);
 }
 
-@media (max-width: 767px) {
+/* Tablet breakpoint (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
     .navbar__mobile-controls {
         display: flex;
+    }
+
+    .navbar__nav {
+        display: none;
     }
 
     .navbar__actions {
@@ -554,6 +589,56 @@ ul, ol {
     .navbar__mobile-daftar {
         padding: 10px 20px;
         font-size: 14px;
+    }
+
+    .navbar__logo-img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .navbar__se-logo-img {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+/* Mobile breakpoint (max 767px) */
+@media (max-width: 767px) {
+    .navbar__mobile-controls {
+        display: flex;
+    }
+
+    .navbar__nav {
+        display: none;
+    }
+
+    .navbar__actions {
+        display: none;
+    }
+
+    .navbar__mobile-daftar {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .navbar__brand-group {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .navbar__brand-text,
+    .navbar__se-text {
+        display: none;
+    }
+
+    .navbar__logo-img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .navbar__se-logo-img {
+        width: 40px;
+        height: 40px;
     }
 }
 
@@ -574,9 +659,24 @@ ul, ol {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
+/* Tablet breakpoint (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .navbar__mobile-toggle {
+        display: flex;
+    }
+}
+
+/* Mobile breakpoint (max 767px) */
 @media (max-width: 767px) {
     .navbar__mobile-toggle {
         display: flex;
+    }
+}
+
+/* Desktop breakpoint (1024px+) - hide hamburger */
+@media (min-width: 1024px) {
+    .navbar__mobile-toggle {
+        display: none;
     }
 }
 
@@ -610,18 +710,19 @@ ul, ol {
     transform: translateY(-7px) rotate(-45deg);
 }
 .navbar__mobile-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    position: fixed;
+    top: 70px;
+    left: 16px;
+    right: 16px;
     background-color: var(--color-canvas);
-    border-radius: 0 0 var(--rounded-lg) var(--rounded-lg);
+    border-radius: var(--rounded-lg);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     padding: var(--spacing-lg) var(--spacing-xl);
     transform: translateY(-10px);
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
+    z-index: 9998;
 }
 
 .navbar__mobile-menu.is-active {
@@ -630,9 +731,21 @@ ul, ol {
     visibility: visible;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
     .navbar__mobile-menu {
         display: none !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .navbar__mobile-menu {
+        top: 80px;
+    }
+}
+
+@media (max-width: 767px) {
+    .navbar__mobile-menu {
+        top: 60px;
     }
 }
 
@@ -652,6 +765,10 @@ ul, ol {
 }
 
 @media (max-width: 767px) {
+    .navbar {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
     .navbar__nav {
         display: none;
     }
@@ -684,6 +801,15 @@ ul, ol {
 
     .navbar__brand,
     .navbar__se-brand {
+        flex-shrink: 0;
+    }
+
+    .navbar__container {
+        padding: 8px 16px;
+        gap: 8px;
+    }
+
+    .navbar__actions {
         flex-shrink: 0;
     }
 }
@@ -1504,6 +1630,13 @@ ul, ol {
     display: flex;
     flex-direction: column;
     max-height: 500px;
+    overflow: hidden;
+}
+
+@media (max-width: 767px) {
+    .stats-table-card {
+        padding: 16px;
+    }
 }
 
 .stats-table-card__title {
@@ -1524,6 +1657,7 @@ ul, ol {
 }
 
 .stats-table-wrapper {
+    overflow-x: auto;
     overflow-y: auto;
     flex: 1;
     scrollbar-width: thin;
@@ -1532,10 +1666,16 @@ ul, ol {
 
 .stats-table-wrapper::-webkit-scrollbar {
     width: 6px;
+    height: 6px;
 }
 
 .stats-table-wrapper::-webkit-scrollbar-track {
     background: transparent;
+}
+
+.stats-table-wrapper::-webkit-scrollbar-thumb {
+    background-color: var(--color-hairline);
+    border-radius: 3px;
 }
 
 .stats-table-wrapper::-webkit-scrollbar-thumb {
@@ -1607,6 +1747,20 @@ ul, ol {
 
 .stats-table tbody tr:hover {
     background-color: var(--color-canvas);
+}
+
+@media (max-width: 767px) {
+    .stats-table th,
+    .stats-table td {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .stats-table__kecamatan,
+    .stats-table__kecamatan-muted,
+    .stats-table__desa {
+        white-space: nowrap;
+    }
 }
 
 /* -----------------------------------------
@@ -1855,6 +2009,7 @@ ul, ol {
     border-radius: var(--rounded-xl);
     padding: 24px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
 }
 
 .map-table-section__header {
@@ -1931,8 +2086,20 @@ ul, ol {
 
 .map-table-wrapper {
     overflow-x: auto;
+    overflow-y: auto;
     border-radius: var(--rounded-md);
     border: 1px solid var(--color-hairline);
+}
+
+#table-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+#table-wrapper .map-table {
+    min-width: 600px;
 }
 
 .map-table-wrapper::-webkit-scrollbar {
@@ -1953,6 +2120,7 @@ ul, ol {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    min-width: 500px;
 }
 
 .map-table th {
@@ -1979,6 +2147,40 @@ ul, ol {
 
 .map-table tbody tr:hover {
     background-color: var(--color-canvas);
+}
+
+@media (max-width: 767px) {
+    .map-table-section {
+        padding: 16px;
+    }
+
+    .map-table-section__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .map-table-section__controls {
+        width: 100%;
+    }
+
+    .map-table-search {
+        flex: 1;
+    }
+
+    .map-table-search input {
+        width: 100%;
+        min-width: 120px;
+    }
+
+    .map-table-filter select {
+        width: 100%;
+    }
+
+    .map-table th,
+    .map-table td {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
 }
 
 .map-table__name {
@@ -2719,4 +2921,329 @@ ul, ol {
     .show-mobile-only {
         display: none !important;
     }
+}
+
+/* -----------------------------------------
+   Petugas Section
+   ----------------------------------------- */
+.petugas-section {
+    background-color: var(--color-canvas-cream);
+    padding: 64px var(--spacing-xxl);
+    position: relative;
+    z-index: 1;
+}
+
+.petugas-section__container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.petugas-section__header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 48px auto;
+}
+
+.petugas-section__eyebrow {
+    display: inline-block;
+    background-color: var(--color-primary-deep);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.144px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--rounded-xxl);
+    margin-bottom: 16px;
+}
+
+.petugas-section__title {
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.256px;
+    margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+    .petugas-section__title {
+        font-size: 40px;
+    }
+}
+
+.petugas-section__description {
+    color: var(--color-ink-mute);
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+/* Stats Section */
+.petugas-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+@media (min-width: 768px) {
+    .petugas-stats {
+        flex-direction: row;
+        justify-content: center;
+    }
+}
+
+.petugas-stats__card {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-deep) 100%);
+    color: white;
+    border-radius: var(--rounded-xl);
+    padding: 32px 48px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(247, 144, 57, 0.3);
+}
+
+.petugas-stats__number {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+}
+
+.petugas-stats__value {
+    font-family: var(--font-display);
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.petugas-stats__suffix {
+    font-size: 20px;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.petugas-stats__label {
+    font-size: 14px;
+    margin-top: 8px;
+    opacity: 0.9;
+}
+
+.petugas-stats__breakdown {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background-color: var(--color-surface-elev);
+    padding: 24px 32px;
+    border-radius: var(--rounded-xl);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.petugas-stats__breakdown-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.petugas-stats__breakdown-value {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--color-ink);
+    line-height: 1;
+}
+
+.petugas-stats__breakdown-role {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-transform: uppercase;
+}
+
+.petugas-stats__breakdown-desc {
+    font-size: 12px;
+    color: var(--color-ink-mute);
+}
+
+.petugas-stats__divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--color-canvas);
+    color: var(--color-hairline);
+}
+
+/* Equipment Section */
+.petugas-equipment {
+    margin-bottom: 32px;
+}
+
+.petugas-equipment__title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-ink);
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.petugas-equipment__subtitle {
+    font-size: 14px;
+    color: var(--color-ink-mute);
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.petugas-equipment__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 640px) {
+    .petugas-equipment__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Equipment Card with Flip Animation */
+.petugas-equipment__card {
+    perspective: 1000px;
+    height: 280px;
+}
+
+.petugas-equipment__card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.petugas-equipment__card-inner.is-flipped {
+    transform: rotateY(180deg);
+}
+
+.petugas-equipment__card-front,
+.petugas-equipment__card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: var(--rounded-xl);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.petugas-equipment__card-front {
+    background: linear-gradient(135deg, var(--color-surface-elev) 0%, var(--color-canvas) 100%);
+    border: 2px solid var(--color-hairline);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.petugas-equipment__card:hover .petugas-equipment__card-front {
+    border-color: var(--color-primary);
+}
+
+.petugas-equipment__card-back {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-deep) 100%);
+    color: white;
+    transform: rotateY(180deg);
+    text-align: left;
+}
+
+.petugas-equipment__card-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(247, 144, 57, 0.1);
+    color: var(--color-primary);
+    border-radius: var(--rounded-lg);
+    margin-bottom: 16px;
+}
+
+.petugas-equipment__card-icon img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.petugas-equipment__card-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-ink);
+    margin-bottom: 8px;
+}
+
+.petugas-equipment__card-back .petugas-equipment__card-title {
+    color: white;
+    margin-bottom: 12px;
+}
+
+.petugas-equipment__card-hint {
+    font-size: 12px;
+    color: var(--color-ink-mute);
+    opacity: 0.7;
+}
+
+.petugas-equipment__card-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    opacity: 0.95;
+}
+
+/* Verification Box */
+.petugas-verification {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    background-color: var(--color-canvas);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-lg);
+    padding: 20px 24px;
+}
+
+.petugas-verification__icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 122, 90, 0.1);
+    color: var(--color-semantic-success);
+    border-radius: var(--rounded-md);
+}
+
+.petugas-verification__text {
+    flex: 1;
+}
+
+.petugas-verification__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-ink);
+    margin-bottom: 4px;
+}
+
+.petugas-verification__desc {
+    font-size: 14px;
+    color: var(--color-ink-mute);
+    line-height: 1.5;
+}
+
+/* x-cloak for Alpine */
+[x-cloak] {
+    display: none !important;
 }
