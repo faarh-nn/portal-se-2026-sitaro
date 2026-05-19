@@ -2,7 +2,7 @@
     <div class="footer__container">
         <div class="footer__grid">
             <div>
-                <a href="#" class="footer__brand">
+                <a href="https://sitarokab.bps.go.id/id" class="footer__brand" target="_blank">
                     <img src="{{ asset('assets/img/logo-bps-white.svg') }}" alt="Logo BPS" class="footer__logo-img">
                     <div class="footer__brand-text">
                         <p class="footer__brand-line1">BPS KABUPATEN</p>
@@ -22,9 +22,9 @@
             <div>
                 <h4 class="footer__section-title">Tentang Kami</h4>
                 <ul class="footer__links">
-                    <li><a href="https://sitarokab.bps.go.id/id" class="footer__link">Website BPS Sitaro</a></li>
-                    <li><a href="https://ppid.bps.go.id/?mfd=0000&_gl=1*621542*_ga*MTczNzgyNDM5NC4xNzE4Njc3ODQz*_ga_XXTTVXWHDB*czE3Nzg3MzcyMTEkbzExMCRnMSR0MTc3ODczNzI1NCRqMTckbDAkaDA." class="footer__link">Profil BPS</a></li>
-                    <li><a href="https://ppid.bps.go.id/?mfd=0000&_gl=1*621542*_ga*MTczNzgyNDM5NC4xNzE4Njc3ODQz*_ga_XXTTVXWHDB*czE3Nzg3MzcyMTEkbzExMCRnMSR0MTc3ODczNzI1NCRqMTckbDAkaDA." class="footer__link">PPID</a></li>
+                    <li><a href="https://sitarokab.bps.go.id/id" class="footer__link" target="_blank">Website BPS Sitaro</a></li>
+                    <li><a href="https://ppid.bps.go.id/?mfd=0000&_gl=1*621542*_ga*MTczNzgyNDM5NC4xNzE4Njc3ODQz*_ga_XXTTVXWHDB*czE3Nzg3MzcyMTEkbzExMCRnMSR0MTc3ODczNzI1NCRqMTckbDAkaDA." class="footer__link" target="_blank">Profil BPS</a></li>
+                    <li><a href="https://ppid.bps.go.id/?mfd=0000&_gl=1*621542*_ga*MTczNzgyNDM5NC4xNzE4Njc3ODQz*_ga_XXTTVXWHDB*czE3Nzg3MzcyMTEkbzExMCRnMSR0MTc3ODczNzI1NCRqMTckbDAkaDA." class="footer__link" target="_blank">PPID</a></li>
                 </ul>
             </div>
 

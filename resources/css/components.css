@@ -505,10 +505,28 @@ ul, ol {
     color: var(--color-ink);
     font-size: 16px;
     transition: color 0.2s ease;
+    position: relative;
 }
 
 .navbar__link:hover {
-    color: var(--color-link-blue);
+    color: var(--color-primary-deep);
+}
+
+.navbar__link--active {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.navbar__link--active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    width: 24px;
+    height: 2px;
+    background-color: var(--color-primary);
+    border-radius: 2px;
+    transform: translateX(-50%);
 }
 
 .navbar__actions {
@@ -563,6 +581,11 @@ ul, ol {
 .navbar__mobile-link {
     color: var(--color-ink);
     font-size: 16px;
+}
+
+.navbar__mobile-link--active {
+    color: var(--color-primary);
+    font-weight: 700;
 }
 
 /* Mobile Controls - Hamburger & Quick Actions */

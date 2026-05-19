@@ -1,7 +1,7 @@
 <nav class="navbar" id="navbar">
     <div class="navbar__container">
         <div class="navbar__brand-group">
-            <a href="#" class="navbar__brand">
+            <a href="https://sitarokab.bps.go.id/id" class="navbar__brand" target="_blank">
                 <img src="{{ asset('assets/img/logo-bps.svg') }}" alt="Logo BPS" class="navbar__logo-img">
                 <div class="navbar__brand-text">
                     <p class="navbar__brand-line1">BPS KABUPATEN</p>
@@ -22,7 +22,7 @@
         </div>
 
         <div class="navbar__nav">
-            <a href="#" class="navbar__link">Beranda</a>
+            <a href="{{ url('/') }}" class="navbar__link{{ request()->is('/') ? ' navbar__link--active' : '' }}">Beranda</a>
             <a href="#" class="navbar__link">Monitoring Progress</a>
             <a href="#" class="navbar__link">Tanya AI</a>
             <a href="#" class="navbar__link">Laporan Lapangan</a>
@@ -47,7 +47,7 @@
 
     <div class="navbar__mobile-menu" id="mobile-menu">
         <div class="navbar__mobile-nav">
-            <a href="#" class="navbar__mobile-link">Beranda</a>
+            <a href="{{ url('/') }}" class="navbar__mobile-link{{ request()->is('/') ? ' navbar__mobile-link--active' : '' }}">Beranda</a>
             <a href="#" class="navbar__mobile-link">Monitoring Progress</a>
             <a href="#" class="navbar__mobile-link">Tanya AI</a>
             <a href="#" class="navbar__mobile-link">Laporan Lapangan</a>
