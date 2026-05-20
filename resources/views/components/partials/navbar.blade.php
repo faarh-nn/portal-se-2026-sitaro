@@ -23,7 +23,7 @@
 
         <div class="navbar__nav">
             <a href="{{ url('/') }}" class="navbar__link{{ request()->is('/') ? ' navbar__link--active' : '' }}">Beranda</a>
-            <a href="#" class="navbar__link">Monitoring Progress</a>
+            <a href="{{ route('monitoring') }}" class="navbar__link{{ request()->is('monitoring') ? ' navbar__link--active' : '' }}">Monitoring Progress</a>
             <a href="#" class="navbar__link">Tanya AI</a>
             <a href="#" class="navbar__link">Laporan Lapangan</a>
         </div>
@@ -48,7 +48,7 @@
     <div class="navbar__mobile-menu" id="mobile-menu">
         <div class="navbar__mobile-nav">
             <a href="{{ url('/') }}" class="navbar__mobile-link{{ request()->is('/') ? ' navbar__mobile-link--active' : '' }}">Beranda</a>
-            <a href="#" class="navbar__mobile-link">Monitoring Progress</a>
+            <a href="{{ route('monitoring') }}" class="navbar__mobile-link{{ request()->is('monitoring') ? ' navbar__mobile-link--active' : '' }}">Monitoring Progress</a>
             <a href="#" class="navbar__mobile-link">Tanya AI</a>
             <a href="#" class="navbar__mobile-link">Laporan Lapangan</a>
         </div>
