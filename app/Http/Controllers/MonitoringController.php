@@ -35,15 +35,15 @@ class MonitoringController extends Controller
         // PML (Petugas Pemeriksa Lapangan) progress data
         $pmlData = [
             ['name' => 'Al Fitri', 'kecamatan' => 'Biaro', 'open' => 45, 'submit' => 32, 'reject' => 5, 'pending' => 8, 'target' => 50, 'approved' => 27],
-            ['name' => 'Dade Chee', 'kecamatan' => 'Tagulandang', 'open' => 78, 'submit' => 65, 'reject' => 3, 'pending' => 10, 'target' => 90, 'approved' => 62],
+            ['name' => 'Dade Chee', 'kecamatan' => 'Tagulandang', 'open' => 78, 'submit' => 65, 'reject' => 3, 'pending' => 10, 'target' => 90, 'approved' => 20],
             ['name' => 'Deswita', 'kecamatan' => 'Siau Timur', 'open' => 92, 'submit' => 88, 'reject' => 2, 'pending' => 2, 'target' => 100, 'approved' => 86],
-            ['name' => 'Gracia Undap', 'kecamatan' => 'Siau Barat', 'open' => 56, 'submit' => 41, 'reject' => 8, 'pending' => 7, 'target' => 60, 'approved' => 33],
-            ['name' => 'Hermita Kakalang', 'kecamatan' => 'Tagulandang Utara', 'open' => 34, 'submit' => 28, 'reject' => 4, 'pending' => 2, 'target' => 40, 'approved' => 24],
+            ['name' => 'Gracia Undap', 'kecamatan' => 'Siau Barat', 'open' => 56, 'submit' => 41, 'reject' => 8, 'pending' => 7, 'target' => 60, 'approved' => 60],
+            ['name' => 'Hermita Kakalang', 'kecamatan' => 'Tagulandang Utara', 'open' => 34, 'submit' => 28, 'reject' => 4, 'pending' => 2, 'target' => 40, 'approved' => 10],
             ['name' => 'Linsa', 'kecamatan' => 'Siau Tengah', 'open' => 67, 'submit' => 55, 'reject' => 6, 'pending' => 6, 'target' => 75, 'approved' => 49],
             ['name' => 'Mama Aim', 'kecamatan' => 'Tagulandang Selatan', 'open' => 89, 'submit' => 72, 'reject' => 5, 'pending' => 12, 'target' => 100, 'approved' => 67],
             ['name' => 'Mauren Devina Lombone', 'kecamatan' => 'Siau Barat Selatan', 'open' => 43, 'submit' => 38, 'reject' => 2, 'pending' => 3, 'target' => 50, 'approved' => 36],
             ['name' => 'Papa Opo', 'kecamatan' => 'Siau Timur Selatan', 'open' => 95, 'submit' => 89, 'reject' => 1, 'pending' => 5, 'target' => 100, 'approved' => 88],
-            ['name' => 'Pareda', 'kecamatan' => 'Siau Barat Utara', 'open' => 51, 'submit' => 44, 'reject' => 3, 'pending' => 4, 'target' => 60, 'approved' => 41],
+            ['name' => 'Pareda', 'kecamatan' => 'Siau Barat Utara', 'open' => 51, 'submit' => 44, 'reject' => 3, 'pending' => 4, 'target' => 60, 'approved' => 60],
             ['name' => 'Trisna Jacob', 'kecamatan' => 'Biaro', 'open' => 62, 'submit' => 53, 'reject' => 4, 'pending' => 5, 'target' => 70, 'approved' => 49],
             ['name' => 'Ungke', 'kecamatan' => 'Tagulandang', 'open' => 71, 'submit' => 64, 'reject' => 3, 'pending' => 4, 'target' => 85, 'approved' => 61],
         ];
@@ -67,13 +67,13 @@ class MonitoringController extends Controller
             ['name' => 'Abdullah', 'open' => 35, 'submit' => 28, 'reject' => 3, 'pending' => 4, 'target' => 45, 'approved' => 40],
             ['name' => 'Aisyah', 'open' => 42, 'submit' => 35, 'reject' => 2, 'pending' => 5, 'target' => 50, 'approved' => 30],
             ['name' => 'Andi', 'open' => 38, 'submit' => 30, 'reject' => 4, 'pending' => 4, 'target' => 48, 'approved' => 26],
-            ['name' => 'Budi', 'open' => 50, 'submit' => 42, 'reject' => 3, 'pending' => 5, 'target' => 55, 'approved' => 39],
+            ['name' => 'Budi', 'open' => 50, 'submit' => 42, 'reject' => 3, 'pending' => 5, 'target' => 55, 'approved' => 55],
             ['name' => 'Dewi', 'open' => 45, 'submit' => 38, 'reject' => 2, 'pending' => 5, 'target' => 52, 'approved' => 33],
-            ['name' => 'Eko', 'open' => 40, 'submit' => 32, 'reject' => 4, 'pending' => 4, 'target' => 50, 'approved' => 28],
+            ['name' => 'Eko', 'open' => 40, 'submit' => 32, 'reject' => 4, 'pending' => 4, 'target' => 50, 'approved' => 10],
             ['name' => 'Fitri', 'open' => 48, 'submit' => 40, 'reject' => 3, 'pending' => 5, 'target' => 55, 'approved' => 35],
             ['name' => 'Gunawan', 'open' => 55, 'submit' => 48, 'reject' => 2, 'pending' => 5, 'target' => 60, 'approved' => 43],
             ['name' => 'Hendra', 'open' => 32, 'submit' => 25, 'reject' => 3, 'pending' => 4, 'target' => 42, 'approved' => 21],
-            ['name' => 'Ika', 'open' => 44, 'submit' => 36, 'reject' => 3, 'pending' => 5, 'target' => 52, 'approved' => 31],
+            ['name' => 'Ika', 'open' => 44, 'submit' => 36, 'reject' => 3, 'pending' => 5, 'target' => 52, 'approved' => 15],
             ['name' => 'Joko', 'open' => 52, 'submit' => 44, 'reject' => 3, 'pending' => 5, 'target' => 58, 'approved' => 39],
             ['name' => 'Kartika', 'open' => 46, 'submit' => 38, 'reject' => 3, 'pending' => 5, 'target' => 54, 'approved' => 33],
             ['name' => 'Lestari', 'open' => 41, 'submit' => 33, 'reject' => 4, 'pending' => 4, 'target' => 50, 'approved' => 29],
@@ -169,6 +169,7 @@ class MonitoringController extends Controller
     public function getPclTablePage(Request $request)
     {
         $page = $request->get('page', 1);
+        $search = $request->get('search', '');
 
         // PCL data - same as in index method
         $pclData = [
@@ -242,13 +243,23 @@ class MonitoringController extends Controller
             $pcl['progress'] = $pcl['target'] > 0 ? round(($pcl['approved'] / $pcl['target']) * 100, 1) : 0;
         }
 
+        // Filter by search if provided
+        if (!empty($search)) {
+            $searchLower = strtolower($search);
+            $pclData = array_filter($pclData, function ($pcl) use ($searchLower) {
+                return strpos(strtolower($pcl['name']), $searchLower) !== false;
+            });
+            $pclData = array_values($pclData); // Re-index array
+        }
+
+        $totalCount = count($pclData);
         $perPage = 10;
         $offset = ($page - 1) * $perPage;
         $slicedData = array_slice($pclData, $offset, $perPage);
 
         $pclPaginated = new LengthAwarePaginator(
             $slicedData,
-            count($pclData),
+            $totalCount,
             $perPage,
             $page,
             ['path' => route('pcl.table.page')]
@@ -261,6 +272,7 @@ class MonitoringController extends Controller
             'pagination' => view('components.partials.pcl-table-pagination', [
                 'pclPaginated' => $pclPaginated,
             ])->render(),
+            'total' => $totalCount,
         ]);
     }
 }

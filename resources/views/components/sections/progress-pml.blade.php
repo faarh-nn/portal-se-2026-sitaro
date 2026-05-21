@@ -1,4 +1,4 @@
-<div class="pml-section">
+<div class="pml-section" x-data="pmlTable()">
     <div class="pml-section__header">
         <span class="pml-section__eyebrow">Monitoring PML</span>
         <h2 class="pml-section__title">Progress per PML (Petugas Pemeriksa Lapangan)</h2>
@@ -78,6 +78,34 @@
         </div>
 
         <div class="pml-table-section">
+            <div class="pml-table-header">
+                <div class="pml-table-search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input
+                        type="text"
+                        id="pml-search"
+                        x-model="search"
+                        placeholder="Cari berdasarkan nama PML..."
+                        class="pml-table-search__input"
+                    />
+                    <button
+                        x-show="search"
+                        x-on:click="search = ''"
+                        class="pml-table-search__clear"
+                        aria-label="Clear search"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <span class="pml-table-count" x-text="filteredData.length + ' data'"></span>
+            </div>
+
             <div class="pml-table-wrapper">
                 <table class="pml-table">
                     <thead>
@@ -92,30 +120,48 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($pmlData as $index => $pml)
-                            @php
-                                $pmlBarColor = $pml['progress'] == 100 ? '#10B981' : ($pml['progress'] >= 71 ? '#00a6fb' : ($pml['progress'] >= 41 ? '#F59E0B' : '#EF4444'));
-                            @endphp
+                        <template x-for="(pml, index) in filteredData" :key="pml.name">
                             <tr>
-                                <td class="pml-table__no">{{ $index + 1 }}</td>
-                                <td class="pml-table__name">{{ $pml['name'] }}</td>
-                                <td class="pml-table__open">{{ $pml['open'] }}</td>
-                                <td class="pml-table__submit">{{ $pml['submit'] }}</td>
-                                <td class="pml-table__reject">{{ $pml['reject'] }}</td>
-                                <td class="pml-table__pending">{{ $pml['pending'] }}</td>
+                                <td class="pml-table__no" x-text="index + 1"></td>
+                                <td class="pml-table__name" x-text="pml.name"></td>
+                                <td class="pml-table__open" x-text="pml.open"></td>
+                                <td class="pml-table__submit" x-text="pml.submit"></td>
+                                <td class="pml-table__reject" x-text="pml.reject"></td>
+                                <td class="pml-table__pending" x-text="pml.pending"></td>
                                 <td class="pml-table__approved">
                                     <div class="pml-progress">
                                         <div class="pml-progress__bar">
-                                            <div class="pml-progress__fill" style="width: {{ $pml['progress'] }}%; background-color: {{ $pmlBarColor }}"></div>
+                                            <div class="pml-progress__fill" :style="`width: ${pml.progress}%; background-color: ${pml.progress === 100 ? '#10B981' : (pml.progress >= 71 ? '#00a6fb' : (pml.progress >= 41 ? '#F59E0B' : '#EF4444'))}`"></div>
                                         </div>
-                                        <span class="pml-progress__value">{{ $pml['approved'] }}/{{ $pml['target'] }} ({{ $pml['progress'] }}%)</span>
+                                        <span class="pml-progress__value" x-text="`${pml.approved}/${pml.target} (${pml.progress}%)`"></span>
                                     </div>
                                 </td>
                             </tr>
-                        @endforeach
+                        </template>
+                        <tr x-show="filteredData.length === 0">
+                            <td colspan="7" class="pml-table__empty">Tidak ada data yang cocok</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </section>
 </div>
+
+<script>
+    function pmlTable() {
+        return {
+            search: '',
+            pmlData: @json($pmlData),
+            get filteredData() {
+                if (!this.search) {
+                    return this.pmlData;
+                }
+                const searchLower = this.search.toLowerCase();
+                return this.pmlData.filter(pml =>
+                    pml.name.toLowerCase().includes(searchLower)
+                );
+            }
+        }
+    }
+</script>

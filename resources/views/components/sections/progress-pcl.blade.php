@@ -1,4 +1,4 @@
-<div class="pcl-section">
+<div class="pcl-section" x-data="pclTable()">
     <div class="pcl-section__header">
         <span class="pcl-section__eyebrow">Monitoring PCL</span>
         <h2 class="pcl-section__title">Progress per PCL (Petugas Pencacah Lapangan)</h2>
@@ -78,6 +78,35 @@
         </div>
 
         <div class="pcl-table-section">
+            <div class="pcl-table-header">
+                <div class="pcl-table-search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input
+                        type="text"
+                        id="pcl-search"
+                        x-model="search"
+                        x-on:input.debounce.300ms="searchData()"
+                        placeholder="Cari berdasarkan nama PCL..."
+                        class="pcl-table-search__input"
+                    />
+                    <button
+                        x-show="search"
+                        x-on:click="clearSearch()"
+                        class="pcl-table-search__clear"
+                        aria-label="Clear search"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <span class="pcl-table-count" x-text="totalCount + ' data'"></span>
+            </div>
+
             <div class="pcl-table-wrapper">
                 <table class="pcl-table" id="pcl-table">
                     <thead>
@@ -126,29 +155,80 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const tableBody = document.getElementById('pcl-table-body');
-    const paginationWrapper = document.getElementById('pcl-pagination-wrapper');
+    function pclTable() {
+        return {
+            search: '',
+            currentPage: {{ $pclDataPaginated->currentPage() }},
+            totalCount: {{ $pclDataPaginated->total() }},
 
-    function loadPclTablePage(page) {
-        const url = `/pcl-table-page?page=${page}`;
+            searchData() {
+                this.currentPage = 1;
+                this.loadData();
+            },
 
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                tableBody.innerHTML = data.html;
-                paginationWrapper.innerHTML = data.pagination;
-            })
-            .catch(error => console.error('Error loading page:', error));
+            clearSearch() {
+                this.search = '';
+                this.currentPage = 1;
+                this.loadData();
+            },
+
+            loadData(page = null) {
+                if (page) {
+                    this.currentPage = page;
+                }
+
+                const tableBody = document.getElementById('pcl-table-body');
+                const paginationWrapper = document.getElementById('pcl-pagination-wrapper');
+                const searchParam = this.search ? `&search=${encodeURIComponent(this.search)}` : '';
+                const url = `/pcl-table-page?page=${this.currentPage}${searchParam}`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        tableBody.innerHTML = data.html;
+                        paginationWrapper.innerHTML = data.pagination;
+                        this.totalCount = data.total;
+                        this.initPagination();
+                    })
+                    .catch(error => console.error('Error loading page:', error));
+            },
+
+            initPagination() {
+                const paginationWrapper = document.getElementById('pcl-pagination-wrapper');
+                paginationWrapper.addEventListener('click', (e) => {
+                    const btn = e.target.closest('[data-page]');
+                    if (!btn) return;
+
+                    e.preventDefault();
+                    const page = btn.dataset.page;
+                    this.loadData(page);
+                });
+            }
+        }
     }
 
-    paginationWrapper.addEventListener('click', function(e) {
-        const btn = e.target.closest('[data-page]');
-        if (!btn) return;
+    document.addEventListener('DOMContentLoaded', function() {
+        const paginationWrapper = document.getElementById('pcl-pagination-wrapper');
+        paginationWrapper.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-page]');
+            if (!btn) return;
 
-        e.preventDefault();
-        const page = btn.dataset.page;
-        loadPclTablePage(page);
+            e.preventDefault();
+            const page = btn.dataset.page;
+            const search = document.querySelector('[x-data]').__x.$data.search;
+            const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+            const tableBody = document.getElementById('pcl-table-body');
+            const paginationWrapperEl = document.getElementById('pcl-pagination-wrapper');
+
+            fetch(`/pcl-table-page?page=${page}${searchParam}`)
+                .then(response => response.json())
+                .then(data => {
+                    tableBody.innerHTML = data.html;
+                    paginationWrapperEl.innerHTML = data.pagination;
+                    document.querySelector('[x-data]').__x.$data.currentPage = page;
+                    document.querySelector('[x-data]').__x.$data.totalCount = data.total;
+                })
+                .catch(error => console.error('Error loading page:', error));
+        });
     });
-});
 </script>
