@@ -46,7 +46,7 @@
                 <div class="petugas-stats__breakdown-item">
                     <span class="petugas-stats__breakdown-value" x-text="pmlValue">0</span>
                     <span class="petugas-stats__breakdown-role">PML</span>
-                    <span class="petugas-stats__breakdown-desc">Penyuluh Pemeriksa Lapangan</span>
+                    <span class="petugas-stats__breakdown-desc">Petugas Pemeriksa Lapangan</span>
                 </div>
                 <div class="petugas-stats__divider">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

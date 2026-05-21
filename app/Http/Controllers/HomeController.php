@@ -115,10 +115,10 @@ class HomeController extends Controller
         $allUsahaGmaps = $query->paginate(10, ['*'], 'page', $page);
 
         return response()->json([
-            'html' => view('components.partials.table-rows', [
+            'html' => view('components.partials.gmaps-table-rows', [
                 'allUsahaGmaps' => $allUsahaGmaps,
             ])->render(),
-            'pagination' => view('components.partials.table-pagination', [
+            'pagination' => view('components.partials.gmaps-table-pagination', [
                 'allUsahaGmaps' => $allUsahaGmaps,
             ])->render(),
             'search' => $search,

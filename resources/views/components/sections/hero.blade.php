@@ -22,7 +22,6 @@
 
                 <div class="hero__actions">
                     <button class="btn-primary-pill btn-primary-pill--lg shadow-sm">Mulai Sekarang</button>
-                    <button class="btn-secondary-pill btn-primary-pill--lg">Pelajari Lebih Lanjut</button>
                 </div>
             </div>
 
