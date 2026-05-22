@@ -58,6 +58,10 @@
                         <span class="monitoring-legend__gradient"></span>
                         <span class="monitoring-legend__gradient-label">Progress tinggi</span>
                     </div>
+                    <div class="monitoring-legend__below-average">
+                        <span class="monitoring-legend__below-average-badge"></span>
+                        <span class="monitoring-legend__text">Di bawah rata-rata</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -122,18 +126,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Siau Barat Utara': 'Siau Barat Utara',
             };
 
+            // Calculate average progress
+            const progressValues = Object.values(progressData).map(d => d.progress);
+            const averageProgress = progressValues.reduce((a, b) => a + b, 0) / progressValues.length;
+
             L.geoJSON(geojsonData, {
                 style: function(feature) {
                     const kecamatanName = feature.properties.NAMOBJ;
                     const progressKey = progressMap[kecamatanName];
                     const data = progressKey ? progressData[progressKey] : null;
                     const progress = data ? data.progress : 0;
-                    const color = getProgressColor(progress);
+
+                    // Below average = red, Above/Average = green gradient
+                    const isBelowAverage = progress < averageProgress;
+                    const fillColor = isBelowAverage ? '#ef4444' : getProgressColor(progress);
+                    const borderColor = isBelowAverage ? '#dc2626' : '#10B981';
 
                     return {
-                        fillColor: color,
+                        fillColor: fillColor,
                         fillOpacity: 0.5,
-                        color: '#10B981',
+                        color: borderColor,
                         weight: 2,
                         opacity: 1
                     };
@@ -145,6 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     if (data) {
                         const progress = data.progress;
+                        const isBelowAverage = progress < averageProgress;
                         const status = progress == 100 ? 'Selesai' :
                                        progress >= 71 ? 'Tinggi' :
                                        progress >= 41 ? 'Sedang' : 'Rendah';
@@ -155,22 +168,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div style="margin-bottom: 8px;">
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
                                         <span style="font-size: 13px; color: #696969;">Progress:</span>
-                                        <span style="font-size: 14px; font-weight: 700; color: #10B981;">${progress}%</span>
+                                        <span style="font-size: 14px; font-weight: 700; color: ${isBelowAverage ? '#ef4444' : '#10B981'};">${progress}%</span>
                                     </div>
                                     <div style="background: #e5e5e5; height: 8px; border-radius: 4px; overflow: hidden;">
-                                        <div style="background: ${getProgressColor(progress)}; height: 100%; width: ${progress}%; border-radius: 4px;"></div>
+                                        <div style="background: ${isBelowAverage ? '#ef4444' : getProgressColor(progress)}; height: 100%; width: ${progress}%; border-radius: 4px;"></div>
                                     </div>
                                 </div>
                                 <p style="margin: 4px 0; font-size: 13px; color: #696969;"><strong>Tercacah:</strong> ${data.completed.toLocaleString('id-ID')}</p>
                                 <p style="margin: 4px 0; font-size: 13px; color: #696969;"><strong>Target:</strong> ${data.target.toLocaleString('id-ID')}</p>
-                                <p style="margin: 8px 0 0 0; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px; display: inline-block; background-color: #10B981; color: white;">${status}</p>
+                                <p style="margin: 4px 0; font-size: 13px; color: #696969;"><strong>Rata-rata:</strong> ${averageProgress.toFixed(1)}%</p>
+                                <p style="margin: 8px 0 0 0; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px; display: inline-block; background-color: ${isBelowAverage ? '#ef4444' : '#10B981'}; color: white;">${status}</p>
                             </div>
                         `;
 
                         layer.bindPopup(popupContent);
                         layer.bindTooltip(
                             `<strong>Kec. ${kecamatanName}</strong><br/>` +
-                            `<span style="color:#10B981">Progress: ${progress}%</span>`,
+                            `<span style="color:${isBelowAverage ? '#ef4444' : '#10B981'}">Progress: ${progress}%</span>`,
                             {
                                 direction: 'top',
                                 offset: [0, -10],
