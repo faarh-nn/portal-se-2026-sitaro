@@ -90,9 +90,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize map centered on Sitaro
     const map = L.map('monitoring-map').setView([2.7307908972918296, 125.40917238648026], 12);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 20,
+        subdomains: 'abcd'
+    }).addTo(map);
+
+    // Add purple overlay for dark purple background effect
+    const purpleSvg = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect fill="#3f448e" opacity="0.7" width="256" height="256"/></svg>');
+    L.tileLayer(purpleSvg, {
+        opacity: 0.7,
+        interactive: false
     }).addTo(map);
 
     // Load GeoJSON for kecamatan boundaries

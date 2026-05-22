@@ -3547,13 +3547,13 @@ ul, ol {
 
 .monitoring-map {
     width: 100%;
-    height: 500px;
+    height: 600px;
     background-color: #e5e5e5;
 }
 
 @media (min-width: 767px) {
     .monitoring-map {
-        height: 450px;
+        height: 550px;
     }
 }
 
