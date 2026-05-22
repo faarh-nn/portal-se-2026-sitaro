@@ -1679,6 +1679,65 @@ ul, ol {
     color: var(--color-primary);
 }
 
+.stats-table-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--color-canvas);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-md);
+    padding: 8px 12px;
+    flex: 1;
+    max-width: 320px;
+    margin-bottom: 16px;
+    max-height: 36px;
+    box-sizing: border-box;
+}
+
+.stats-table-search svg {
+    color: var(--color-ink-mute);
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+}
+
+.stats-table-search__input {
+    border: none;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--color-ink);
+    outline: none;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+}
+
+.stats-table-search__input::placeholder {
+    color: var(--color-ink-mute);
+}
+
+.stats-table-search__clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--color-ink-mute);
+    cursor: pointer;
+    border-radius: var(--rounded-full);
+    padding: 0;
+    transition: color 0.15s ease;
+    flex-shrink: 0;
+}
+
+.stats-table-search__clear:hover {
+    color: var(--color-ink);
+}
+
 .stats-table-wrapper {
     overflow-x: auto;
     overflow-y: auto;
@@ -1885,13 +1944,13 @@ ul, ol {
 }
 
 .gmaps-stat-card--sbr .gmaps-stat-card__icon {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: #10B981;
+    background-color: rgba(0, 166, 251, 0.15);
+    color: #00a6fb;
 }
 
 .gmaps-stat-card--outside .gmaps-stat-card__icon {
-    background-color: rgba(0, 166, 251, 0.15);
-    color: #00a6fb;
+    background-color: rgba(251, 5, 5, 0.15);
+    color: red;
 }
 
 .gmaps-stat-card__content {
