@@ -9,20 +9,6 @@
 
     <section class="pml-section__container">
         <div class="pml-stats-row">
-            <div class="pml-stat-card pml-stat-card--open">
-                <div class="pml-stat-card__icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                        <polyline points="10 17 15 12 10 7"></polyline>
-                        <line x1="15" y1="12" x2="3" y2="12"></line>
-                    </svg>
-                </div>
-                <div class="pml-stat-card__content">
-                    <span class="pml-stat-card__value">{{ number_format($pmlTotals['open']) }}</span>
-                    <span class="pml-stat-card__label">Open</span>
-                </div>
-            </div>
-
             <div class="pml-stat-card pml-stat-card--submit">
                 <div class="pml-stat-card__icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -47,19 +33,6 @@
                 <div class="pml-stat-card__content">
                     <span class="pml-stat-card__value">{{ number_format($pmlTotals['reject']) }}</span>
                     <span class="pml-stat-card__label">Reject</span>
-                </div>
-            </div>
-
-            <div class="pml-stat-card pml-stat-card--pending">
-                <div class="pml-stat-card__icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                </div>
-                <div class="pml-stat-card__content">
-                    <span class="pml-stat-card__value">{{ number_format($pmlTotals['pending']) }}</span>
-                    <span class="pml-stat-card__label">Pending</span>
                 </div>
             </div>
 
@@ -112,11 +85,22 @@
                         <tr>
                             <th>No</th>
                             <th>Nama PML</th>
-                            <th>Open</th>
                             <th>Submit</th>
                             <th>Reject</th>
-                            <th>Pending</th>
-                            <th>Approved (Progress)</th>
+                            <th class="pml-table__sortable" x-on:click="toggleSort('progress')">
+                                Approved (Progress)
+                                <span class="pml-table__sort-icon">
+                                    <svg x-show="sortBy !== 'progress'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
+                                    </svg>
+                                    <svg x-show="sortBy === 'progress' && sortDirection === 'asc'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M7 9l5-5 5 5"/>
+                                    </svg>
+                                    <svg x-show="sortBy === 'progress' && sortDirection === 'desc'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M7 15l5 5 5-5"/>
+                                    </svg>
+                                </span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -124,10 +108,8 @@
                             <tr>
                                 <td class="pml-table__no" x-text="index + 1"></td>
                                 <td class="pml-table__name" x-text="pml.name"></td>
-                                <td class="pml-table__open" x-text="pml.open"></td>
                                 <td class="pml-table__submit" x-text="pml.submit"></td>
                                 <td class="pml-table__reject" x-text="pml.reject"></td>
-                                <td class="pml-table__pending" x-text="pml.pending"></td>
                                 <td class="pml-table__approved">
                                     <div class="pml-progress">
                                         <div class="pml-progress__bar">
@@ -139,7 +121,7 @@
                             </tr>
                         </template>
                         <tr x-show="filteredData.length === 0">
-                            <td colspan="7" class="pml-table__empty">Tidak ada data yang cocok</td>
+                            <td colspan="5" class="pml-table__empty">Tidak ada data yang cocok</td>
                         </tr>
                     </tbody>
                 </table>
@@ -152,15 +134,43 @@
     function pmlTable() {
         return {
             search: '',
+            sortBy: '',
+            sortDirection: 'asc',
             pmlData: @json($pmlData),
-            get filteredData() {
-                if (!this.search) {
-                    return this.pmlData;
+            toggleSort(column) {
+                if (this.sortBy === column) {
+                    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.sortBy = column;
+                    this.sortDirection = 'asc';
                 }
-                const searchLower = this.search.toLowerCase();
-                return this.pmlData.filter(pml =>
-                    pml.name.toLowerCase().includes(searchLower)
-                );
+            },
+            get sortedData() {
+                let data = [...this.pmlData];
+
+                // Apply search filter
+                if (this.search) {
+                    const searchLower = this.search.toLowerCase();
+                    data = data.filter(pml => pml.name.toLowerCase().includes(searchLower));
+                }
+
+                // Apply sorting
+                if (this.sortBy) {
+                    data.sort((a, b) => {
+                        let aVal = a[this.sortBy];
+                        let bVal = b[this.sortBy];
+                        if (this.sortDirection === 'asc') {
+                            return aVal - bVal;
+                        } else {
+                            return bVal - aVal;
+                        }
+                    });
+                }
+
+                return data;
+            },
+            get filteredData() {
+                return this.sortedData;
             }
         }
     }

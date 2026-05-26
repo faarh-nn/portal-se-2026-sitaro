@@ -130,9 +130,43 @@ class MonitoringController extends Controller
             ['name' => 'Omar', 'open' => 45, 'submit' => 37, 'reject' => 3, 'pending' => 5, 'target' => 52, 'approved' => 32],
         ];
 
-        // Calculate PCL progress percentage
+        // PML to PCL mapping (each PML oversees 4-6 PCL)
+        $pmlNames = array_column($pmlData, 'name');
+        $pmlIndex = 0;
+        $pclPerPmlCount = [];
+        $pclToPmlMap = [];
+
+        foreach ($pclData as $index => $pcl) {
+            if ($pmlIndex >= count($pmlNames)) {
+                $pmlIndex = 0;
+            }
+
+            if (! isset($pclPerPmlCount[$pmlIndex])) {
+                $pclPerPmlCount[$pmlIndex] = 0;
+            }
+
+            $maxPclPerPml = ($pmlIndex < 4) ? 6 : 5;
+            if ($pclPerPmlCount[$pmlIndex] >= $maxPclPerPml) {
+                $pmlIndex++;
+                if ($pmlIndex >= count($pmlNames)) {
+                    $pmlIndex = 0;
+                }
+                $pclPerPmlCount[$pmlIndex] = 0;
+            }
+
+            $pclToPmlMap[$index] = $pmlNames[$pmlIndex];
+            $pclPerPmlCount[$pmlIndex]++;
+        }
+
+        // Assign PML to each PCL
+        foreach ($pclData as $index => &$pcl) {
+            $pcl['pml'] = $pclToPmlMap[$index];
+        }
+
+        // Calculate PCL progress percentage and submit ratio
         foreach ($pclData as &$pcl) {
             $pcl['progress'] = $pcl['target'] > 0 ? round(($pcl['approved'] / $pcl['target']) * 100, 1) : 0;
+            $pcl['submit_ratio'] = $pcl['target'] > 0 ? round(($pcl['submit'] / $pcl['target']) * 100, 1) : 0;
         }
 
         // Calculate PCL totals
@@ -143,6 +177,10 @@ class MonitoringController extends Controller
             'pending' => array_sum(array_column($pclData, 'pending')),
             'approved' => array_sum(array_column($pclData, 'approved')),
         ];
+
+        // Get unique PML names for filtering dropdown
+        $pmlList = array_unique(array_column($pclData, 'pml'));
+        sort($pmlList);
 
         // Paginate PCL data (10 per page) using Laravel's LengthAwarePaginator
         $pclDataPaginated = new LengthAwarePaginator(
@@ -162,7 +200,8 @@ class MonitoringController extends Controller
             'pmlTotals',
             'pclData',
             'pclTotals',
-            'pclDataPaginated'
+            'pclDataPaginated',
+            'pmlList'
         ));
     }
 
@@ -170,6 +209,7 @@ class MonitoringController extends Controller
     {
         $page = $request->get('page', 1);
         $search = $request->get('search', '');
+        $pmlFilter = $request->get('pml', '');
 
         // PCL data - same as in index method
         $pclData = [
@@ -239,17 +279,88 @@ class MonitoringController extends Controller
             ['name' => 'Omar', 'open' => 45, 'submit' => 37, 'reject' => 3, 'pending' => 5, 'target' => 52, 'approved' => 32],
         ];
 
+        // PML names for mapping (same as in index method)
+        $pmlDataForMapping = [
+            ['name' => 'Al Fitri'],
+            ['name' => 'Dade Chee'],
+            ['name' => 'Deswita'],
+            ['name' => 'Gracia Undap'],
+            ['name' => 'Hermita Kakalang'],
+            ['name' => 'Linsa'],
+            ['name' => 'Mama Aim'],
+            ['name' => 'Mauren Devina Lombone'],
+            ['name' => 'Papa Opo'],
+            ['name' => 'Pareda'],
+            ['name' => 'Trisna Jacob'],
+            ['name' => 'Ungke'],
+        ];
+
+        // PML to PCL mapping
+        $pmlNames = array_column($pmlDataForMapping, 'name');
+        $pmlIndex = 0;
+        $pclPerPmlCount = [];
+        $pclToPmlMap = [];
+
+        foreach ($pclData as $index => $pcl) {
+            if ($pmlIndex >= count($pmlNames)) {
+                $pmlIndex = 0;
+            }
+
+            if (! isset($pclPerPmlCount[$pmlIndex])) {
+                $pclPerPmlCount[$pmlIndex] = 0;
+            }
+
+            $maxPclPerPml = ($pmlIndex < 4) ? 6 : 5;
+            if ($pclPerPmlCount[$pmlIndex] >= $maxPclPerPml) {
+                $pmlIndex++;
+                if ($pmlIndex >= count($pmlNames)) {
+                    $pmlIndex = 0;
+                }
+                $pclPerPmlCount[$pmlIndex] = 0;
+            }
+
+            $pclToPmlMap[$index] = $pmlNames[$pmlIndex];
+            $pclPerPmlCount[$pmlIndex]++;
+        }
+
+        // Assign PML to each PCL
+        foreach ($pclData as $index => &$pcl) {
+            $pcl['pml'] = $pclToPmlMap[$index];
+        }
+
         foreach ($pclData as &$pcl) {
             $pcl['progress'] = $pcl['target'] > 0 ? round(($pcl['approved'] / $pcl['target']) * 100, 1) : 0;
+            $pcl['submit_ratio'] = $pcl['target'] > 0 ? round(($pcl['submit'] / $pcl['target']) * 100, 1) : 0;
         }
 
         // Filter by search if provided
-        if (!empty($search)) {
+        if (! empty($search)) {
             $searchLower = strtolower($search);
             $pclData = array_filter($pclData, function ($pcl) use ($searchLower) {
                 return strpos(strtolower($pcl['name']), $searchLower) !== false;
             });
-            $pclData = array_values($pclData); // Re-index array
+            $pclData = array_values($pclData);
+        }
+
+        // Filter by PML if provided
+        if (! empty($pmlFilter)) {
+            $pclData = array_filter($pclData, function ($pcl) use ($pmlFilter) {
+                return $pcl['pml'] === $pmlFilter;
+            });
+            $pclData = array_values($pclData);
+        }
+
+        // Sort by column if provided
+        $sortBy = $request->get('sortBy', '');
+        $sortDirection = $request->get('sortDirection', 'asc');
+        if ($sortBy && in_array($sortBy, ['submit_ratio', 'progress'])) {
+            usort($pclData, function ($a, $b) use ($sortBy, $sortDirection) {
+                if ($sortDirection === 'asc') {
+                    return $a[$sortBy] <=> $b[$sortBy];
+                } else {
+                    return $b[$sortBy] <=> $a[$sortBy];
+                }
+            });
         }
 
         $totalCount = count($pclData);

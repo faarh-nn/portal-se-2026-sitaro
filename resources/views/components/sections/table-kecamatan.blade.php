@@ -8,7 +8,6 @@
                     <th>Progress</th>
                     <th>Tercacah</th>
                     <th>Target</th>
-                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -28,17 +27,6 @@
                         </td>
                         <td class="monitoring-kecamatan-table__completed">{{ number_format($data['completed']) }}</td>
                         <td class="monitoring-kecamatan-table__target">{{ number_format($data['target']) }}</td>
-                        <td>
-                            @if($data['progress'] == 100)
-                                <span class="monitoring-kecamatan-status monitoring-kecamatan-status--complete">Selesai</span>
-                            @elseif($data['progress'] >= 71)
-                                <span class="monitoring-kecamatan-status monitoring-kecamatan-status--high">Tinggi</span>
-                            @elseif($data['progress'] >= 41)
-                                <span class="monitoring-kecamatan-status monitoring-kecamatan-status--medium">Sedang</span>
-                            @else
-                                <span class="monitoring-kecamatan-status monitoring-kecamatan-status--low">Rendah</span>
-                            @endif
-                        </td>
                     </tr>
                 @endforeach
             </tbody>
