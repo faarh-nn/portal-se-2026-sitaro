@@ -17,8 +17,9 @@
     --color-ink-mute: #696969;
     --color-link-blue: #00a6fb;
     --color-link-hover: #00a6fb;
+    --color-canvas-hero: #fff6dd;
     --color-canvas: #fffbee;
-    --color-canvas-cream: #f4ede4;
+    --color-canvas-cream: #fffdf7;
     --color-canvas-lavender: #f9f0ff;
     --color-surface-elev: #ffffff;
     --color-surface-orange: #e69c67;
@@ -843,68 +844,10 @@ ul, ol {
 .hero {
     position: relative;
     overflow: hidden;
-    background-color: var(--color-canvas);
+    background-color: var(--color-canvas-hero);
     padding-top: 72px;
 }
 
-.hero__bg-image {
-    position: absolute;
-    inset: 0;
-    background-image: url('/public/assets/img/background-sitaro.jpg');
-    background-size: cover;
-    background-position: center;
-    opacity: 0.4;
-    z-index: 0;
-}
-
-.hero__gradient-bg {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, #fff0e6 0%, var(--color-canvas) 50%, var(--color-canvas-lavender) 100%);
-    opacity: 0.5;
-    z-index: 1;
-}
-
-.hero__glow-orange {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 600px;
-    height: 600px;
-    background-color: var(--color-primary);
-    border-radius: 50%;
-    opacity: 0.1;
-    filter: blur(120px);
-    transform: translateX(33%) translateY(-33%);
-    z-index: 2;
-}
-
-.hero__glow-yellow {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 400px;
-    height: 400px;
-    background-color: var(--color-primary-tint);
-    border-radius: 50%;
-    opacity: 0.1;
-    filter: blur(100px);
-    transform: translateX(-33%) translateY(33%);
-    z-index: 2;
-}
-
-.hero__glow-lavender {
-    position: absolute;
-    top: 50%;
-    left: 33%;
-    width: 300px;
-    height: 300px;
-    background-color: var(--color-canvas-lavender);
-    border-radius: 50%;
-    opacity: 0.2;
-    filter: blur(80px);
-    z-index: 2;
-}
 
 .hero__content {
     position: relative;
@@ -1141,9 +1084,8 @@ ul, ol {
 }
 
 .hero__fade-bottom {
-    position: relative;
     height: 48px;
-    background: linear-gradient(to bottom, transparent, var(--color-canvas));
+    background: linear-gradient(to bottom, transparent, var(--color-canvas-cream));
 }
 
 /* -----------------------------------------
@@ -1469,7 +1411,7 @@ ul, ol {
    Statistics Section
    ----------------------------------------- */
 .stats-section {
-    background-color: var(--color-canvas);
+    background-color: var(--color-canvas-cream);
     padding: 64px var(--spacing-xxl);
 }
 
@@ -1849,7 +1791,7 @@ ul, ol {
    Gmap Section
    ----------------------------------------- */
 .gmaps-section {
-    background-color: var(--color-canvas-cream);
+    background-color: var(--color-canvas);
     padding: 64px var(--spacing-xxl);
     position: relative;
     z-index: 1;
@@ -2390,7 +2332,7 @@ ul, ol {
    SE Tujuan Section
    ----------------------------------------- */
 .se-tujuan-section {
-    background-color: var(--color-canvas);
+    background-color: var(--color-canvas-cream);
     padding: 64px var(--spacing-xxl);
     position: relative;
     z-index: 1;

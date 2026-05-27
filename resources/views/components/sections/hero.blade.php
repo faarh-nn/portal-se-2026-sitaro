@@ -1,9 +1,4 @@
 <section class="hero">
-    <div class="hero__bg-image"></div>
-    <div class="hero__gradient-bg"></div>
-    <div class="hero__glow-orange"></div>
-    <div class="hero__glow-yellow"></div>
-    <div class="hero__glow-lavender"></div>
 
     <div class="hero__content">
         <div class="hero__grid">
