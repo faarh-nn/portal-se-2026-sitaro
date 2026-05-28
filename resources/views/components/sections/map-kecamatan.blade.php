@@ -100,9 +100,9 @@ document.addEventListener('DOMContentLoaded', function() {
         subdomains: 'abcd'
     }).addTo(map);
 
-    // Add purple overlay for dark purple background effect
-    const purpleSvg = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect fill="#023e8a" opacity="0.8" width="256" height="256"/></svg>');
-    L.tileLayer(purpleSvg, {
+    // Add blue overlay for dark blue background effect
+    const blueSvg = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect fill="#023e8a" opacity="0.8" width="256" height="256"/></svg>');
+    L.tileLayer(blueSvg, {
         opacity: 0.8,
         interactive: false
     }).addTo(map);
