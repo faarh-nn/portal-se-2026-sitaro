@@ -2503,7 +2503,7 @@ ul, ol {
    KBLI Section
    ----------------------------------------- */
 .kbli-section {
-    background-color: var(--color-canvas-cream);
+    background-color: var(--color-primary);
     padding: 64px var(--spacing-xxl);
     position: relative;
     z-index: 1;
@@ -2522,8 +2522,8 @@ ul, ol {
 
 .kbli-section__eyebrow {
     display: inline-block;
-    background-color: #00a6fb;
-    color: white;
+    background-color: white;
+    color: var(--color-primary);
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
@@ -2534,7 +2534,7 @@ ul, ol {
 }
 
 .kbli-section__title {
-    color: var(--color-ink);
+    color: white;
     font-family: var(--font-display);
     font-size: 32px;
     font-weight: 700;
@@ -2550,27 +2550,46 @@ ul, ol {
 }
 
 .kbli-section__description {
-    color: var(--color-ink-mute);
+    color: white;
     font-size: 16px;
     line-height: 1.55;
 }
 
-.kbli-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-}
-
-@media (min-width: 1024px) {
-    .kbli-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-.kbli-column {
+.kbli-marquee-wrapper {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.kbli-marquee {
+    overflow: hidden;
+}
+
+.kbli-marquee--row-2 .kbli-marquee__track {
+    animation-direction: reverse;
+}
+
+.kbli-marquee__track {
+    display: flex;
+    gap: 12px;
+    width: max-content;
+    animation: kbliMarquee 30s linear infinite;
+}
+
+.kbli-marquee__track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes kbliMarquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
 }
 
 .kbli-category-card {
@@ -2582,6 +2601,8 @@ ul, ol {
     border-radius: var(--rounded-lg);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     transition: all 0.2s ease;
+    flex-shrink: 0;
+    width: fit-content;
 }
 
 .kbli-category-card:hover {
