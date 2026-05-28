@@ -30,8 +30,8 @@
     --color-on-orange-mute: #c3b8bc;
 
     /* Typography */
-    --font-display: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
-    --font-body: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 
     /* Rounded */
     --rounded-xs: 2px;
@@ -902,7 +902,7 @@ ul, ol {
 .hero__title {
     color: var(--color-ink);
     font-family: var(--font-display);
-    font-size: 48px;
+    font-size: 40px;
     font-weight: 700;
     line-height: 1.12;
     letter-spacing: -0.768px;
@@ -911,13 +911,13 @@ ul, ol {
 
 @media (min-width: 768px) {
     .hero__title {
-        font-size: 58px;
+        font-size: 48px;
     }
 }
 
 @media (min-width: 1024px) {
     .hero__title {
-        font-size: 64px;
+        font-size: 58px;
     }
 }
 
@@ -2503,10 +2503,29 @@ ul, ol {
    KBLI Section
    ----------------------------------------- */
 .kbli-section {
+    background-size: cover;
+    background-position: center;
     background-color: var(--color-primary);
     padding: 64px var(--spacing-xxl);
     position: relative;
     z-index: 1;
+}
+
+.kbli-section__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+.kbli-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(247, 144, 57, 0.85), rgba(247, 144, 57, 0.7));
+    z-index: -1;
 }
 
 .kbli-section__container {

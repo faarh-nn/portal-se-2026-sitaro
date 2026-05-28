@@ -1,4 +1,5 @@
 <section class="kbli-section" id="cakupan-kbli">
+    <img src="{{ asset('assets/img/kbli-img.png') }}" alt="" class="kbli-section__bg">
     <div class="kbli-section__container">
         <div class="kbli-section__header">
             <span class="kbli-section__eyebrow">KBLI 2025</span>
