@@ -6,7 +6,7 @@
                 <tr>
                     <th>Kecamatan</th>
                     <th>Progress</th>
-                    <th>Tercacah</th>
+                    <th>Tercacah (Submit)</th>
                     <th>Target</th>
                 </tr>
             </thead>

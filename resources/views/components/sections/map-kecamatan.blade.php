@@ -44,7 +44,7 @@
                 </div>
                 <div class="monitoring-stat-card__content">
                     <span class="monitoring-stat-card__value">{{ number_format($totalCompleted) }}</span>
-                    <span class="monitoring-stat-card__label">Tercacah</span>
+                    <span class="monitoring-stat-card__label">Tercacah (Submit)</span>
                 </div>
             </div>
         </div>
