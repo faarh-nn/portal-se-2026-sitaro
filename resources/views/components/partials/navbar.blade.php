@@ -25,7 +25,11 @@
             <a href="{{ url('/') }}" class="navbar__link{{ request()->is('/') ? ' navbar__link--active' : '' }}">Beranda</a>
             <a href="{{ route('monitoring') }}" class="navbar__link{{ request()->is('monitoring') ? ' navbar__link--active' : '' }}">Monitoring Progress</a>
             <a href="#" class="navbar__link">Tanya AI</a>
-            <a href="#" class="navbar__link">Laporan Lapangan</a>
+            @auth
+                @if(Auth::user()->role === 'admin')
+                    <a href="{{ route('admin.dashboard') }}" class="navbar__link{{ request()->is('admin*') ? ' navbar__link--active' : '' }}">Admin</a>
+                @endif
+            @endauth
         </div>
 
         <div class="navbar__actions">
@@ -129,7 +133,6 @@
             <a href="{{ url('/') }}" class="navbar__mobile-link{{ request()->is('/') ? ' navbar__mobile-link--active' : '' }}">Beranda</a>
             <a href="{{ route('monitoring') }}" class="navbar__mobile-link{{ request()->is('monitoring') ? ' navbar__mobile-link--active' : '' }}">Monitoring Progress</a>
             <a href="#" class="navbar__mobile-link">Tanya AI</a>
-            <a href="#" class="navbar__mobile-link">Laporan Lapangan</a>
         </div>
         <div class="navbar__mobile-actions">
             @auth

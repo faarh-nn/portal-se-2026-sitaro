@@ -50,16 +50,16 @@
                 </div>
             </div>
 
-            <div class="pcl-stat-card pcl-stat-card--pending">
+            <div class="pcl-stat-card pcl-stat-card--completed">
                 <div class="pcl-stat-card__icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
                     </svg>
                 </div>
                 <div class="pcl-stat-card__content">
-                    <span class="pcl-stat-card__value">{{ number_format($pclTotals['pending']) }}</span>
-                    <span class="pcl-stat-card__label">Pending</span>
+                    <span class="pcl-stat-card__value">{{ number_format($pclTotals['completed']) }}</span>
+                    <span class="pcl-stat-card__label">Completed</span>
                 </div>
             </div>
         </div>
@@ -119,7 +119,7 @@
                             <th>Open</th>
                             <th>Submit</th>
                             <th>Reject</th>
-                            <th>Pending</th>
+                            <th>Completed</th>
                             <th>Nama PML</th>
                             <th class="pcl-table__sortable" x-on:click="toggleSort('submit_ratio')">
                                 Submit/Assignment
@@ -149,7 +149,7 @@
                                 <td class="pcl-table__open">{{ $pcl['open'] }}</td>
                                 <td class="pcl-table__submit">{{ $pcl['submit'] }}</td>
                                 <td class="pcl-table__reject">{{ $pcl['reject'] }}</td>
-                                <td class="pcl-table__pending">{{ $pcl['pending'] }}</td>
+                                <td class="pcl-table__completed">{{ $pcl['completed'] }}</td>
                                 <td class="pcl-table__pml">{{ $pcl['pml'] }}</td>
                                 <td class="pcl-table__submit-ratio">
                                     <div class="pcl-progress">

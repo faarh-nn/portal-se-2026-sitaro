@@ -9,7 +9,7 @@
         <td class="pcl-table__open">{{ $pcl['open'] }}</td>
         <td class="pcl-table__submit">{{ $pcl['submit'] }}</td>
         <td class="pcl-table__reject">{{ $pcl['reject'] }}</td>
-        <td class="pcl-table__pending">{{ $pcl['pending'] }}</td>
+        <td class="pcl-table__completed">{{ $pcl['completed'] }}</td>
         <td class="pcl-table__pml">{{ $pcl['pml'] }}</td>
         <td class="pcl-table__submit-ratio">
             <div class="pcl-progress">

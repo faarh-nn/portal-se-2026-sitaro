@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
@@ -23,4 +24,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 // Admin routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/import', [ImportController::class, 'index'])->name('import');
+    Route::post('/import/kecamatan', [ImportController::class, 'importKecamatanMapping'])->name('import.kecamatan');
+    Route::post('/import/officer', [ImportController::class, 'importOfficerMapping'])->name('import.officer');
+    Route::post('/import/monitoring', [ImportController::class, 'importMonitoringData'])->name('import.monitoring');
+    Route::post('/import/clear', [ImportController::class, 'clearData'])->name('import.clear');
 });
