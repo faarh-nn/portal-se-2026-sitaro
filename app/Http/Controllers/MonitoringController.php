@@ -7,6 +7,8 @@ use App\Models\OfficerMapping;
 use App\Models\PclPml;
 use App\Models\PclProgress;
 use App\Models\PclTotalAssignment;
+use App\Models\PmlProgress;
+use App\Models\PmlTotalAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -39,34 +41,44 @@ class MonitoringController extends Controller
         $totalCompleted = $kecamatanProgress->sum('submit');
         $overallProgress = $totalTarget > 0 ? round(($totalCompleted / $totalTarget) * 100, 1) : 0;
 
-        // PML (Petugas Pemeriksa Lapangan) progress data
-        $pmlData = [
-            ['name' => 'Al Fitri', 'kecamatan' => 'Biaro', 'open' => 45, 'submit' => 32, 'reject' => 5, 'completed' => 8, 'target' => 50, 'approved' => 27],
-            ['name' => 'Dade Chee', 'kecamatan' => 'Tagulandang', 'open' => 78, 'submit' => 65, 'reject' => 3, 'completed' => 10, 'target' => 90, 'approved' => 20],
-            ['name' => 'Deswita', 'kecamatan' => 'Siau Timur', 'open' => 92, 'submit' => 88, 'reject' => 2, 'completed' => 2, 'target' => 100, 'approved' => 86],
-            ['name' => 'Gracia Undap', 'kecamatan' => 'Siau Barat', 'open' => 56, 'submit' => 41, 'reject' => 8, 'completed' => 7, 'target' => 60, 'approved' => 60],
-            ['name' => 'Hermita Kakalang', 'kecamatan' => 'Tagulandang Utara', 'open' => 34, 'submit' => 28, 'reject' => 4, 'completed' => 2, 'target' => 40, 'approved' => 10],
-            ['name' => 'Linsa', 'kecamatan' => 'Siau Tengah', 'open' => 67, 'submit' => 55, 'reject' => 6, 'completed' => 6, 'target' => 75, 'approved' => 49],
-            ['name' => 'Mama Aim', 'kecamatan' => 'Tagulandang Selatan', 'open' => 89, 'submit' => 72, 'reject' => 5, 'completed' => 12, 'target' => 100, 'approved' => 67],
-            ['name' => 'Mauren Devina Lombone', 'kecamatan' => 'Siau Barat Selatan', 'open' => 43, 'submit' => 38, 'reject' => 2, 'completed' => 3, 'target' => 50, 'approved' => 36],
-            ['name' => 'Papa Opo', 'kecamatan' => 'Siau Timur Selatan', 'open' => 95, 'submit' => 89, 'reject' => 1, 'completed' => 5, 'target' => 100, 'approved' => 88],
-            ['name' => 'Pareda', 'kecamatan' => 'Siau Barat Utara', 'open' => 51, 'submit' => 44, 'reject' => 3, 'completed' => 4, 'target' => 60, 'approved' => 60],
-            ['name' => 'Trisna Jacob', 'kecamatan' => 'Biaro', 'open' => 62, 'submit' => 53, 'reject' => 4, 'completed' => 5, 'target' => 70, 'approved' => 49],
-            ['name' => 'Ungke', 'kecamatan' => 'Tagulandang', 'open' => 71, 'submit' => 64, 'reject' => 3, 'completed' => 4, 'target' => 85, 'approved' => 61],
-        ];
+        // PML (Petugas Pemeriksa Lapangan) progress data from database
+        $pmlProgressData = PmlProgress::selectRaw('
+            email,
+            SUM(submit) as submit,
+            SUM(reject) as reject,
+            SUM(approve) as approved
+        ')->groupBy('email')->get();
 
-        // Calculate PML progress percentage for approved column
-        foreach ($pmlData as &$pml) {
-            $pml['progress'] = $pml['target'] > 0 ? round(($pml['approved'] / $pml['target']) * 100, 1) : 0;
+        // Get PML total assignments
+        $pmlTotalAssignments = PmlTotalAssignment::pluck('total_assignment', 'email');
+
+        // Format PML data
+        $pmlData = [];
+        foreach ($pmlProgressData as $pml) {
+            $officer = OfficerMapping::where('email', $pml->email)->first();
+            $pmlName = $officer->name ?? $pml->email;
+
+            $totalAssignment = $pmlTotalAssignments[$pml->email] ?? 0;
+            $progress = $totalAssignment > 0
+                ? round(($pml->approved / $totalAssignment) * 100, 1)
+                : 0;
+
+            $pmlData[] = [
+                'name' => $pmlName,
+                'email' => $pml->email,
+                'submit' => $pml->submit,
+                'reject' => $pml->reject,
+                'approved' => $pml->approved,
+                'target' => $totalAssignment,
+                'progress' => $progress,
+            ];
         }
 
-        // Calculate totals
+        // Calculate PML totals
         $pmlTotals = [
-            'open' => array_sum(array_column($pmlData, 'open')),
-            'submit' => array_sum(array_column($pmlData, 'submit')),
-            'reject' => array_sum(array_column($pmlData, 'reject')),
-            'completed' => array_sum(array_column($pmlData, 'completed')),
-            'approved' => array_sum(array_column($pmlData, 'approved')),
+            'submit' => $pmlProgressData->sum('submit'),
+            'reject' => $pmlProgressData->sum('reject'),
+            'approved' => $pmlProgressData->sum('approved'),
         ];
 
         // PCL (Petugas Pencacah Lapangan) progress data from database

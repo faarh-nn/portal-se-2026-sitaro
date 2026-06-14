@@ -16,7 +16,7 @@
                 <div class="pcl-progress__bar">
                     <div class="pcl-progress__fill" style="width: {{ $pcl['submit_ratio'] }}%; background-color: {{ $pclBarColor }}"></div>
                 </div>
-                <span class="pcl-progress__value">{{ $pcl['submit_ratio'] }}%</span>
+                <span class="pcl-progress__value">{{ $pcl['submit'] }}/{{ $pcl['target'] }} ({{ $pcl['submit_ratio'] }}%)</span>
             </div>
         </td>
     </tr>

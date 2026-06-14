@@ -88,7 +88,7 @@
                             <th>Submit</th>
                             <th>Reject</th>
                             <th class="pml-table__sortable" x-on:click="toggleSort('progress')">
-                                Approved (Progress)
+                                Approved/Total Assignment
                                 <span class="pml-table__sort-icon">
                                     <svg x-show="sortBy !== 'progress'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
