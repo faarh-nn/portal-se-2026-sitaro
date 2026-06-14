@@ -3772,12 +3772,31 @@ ul, ol {
     overflow: hidden;
 }
 
+.monitoring-kecamatan-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
 .monitoring-kecamatan-table-section__title {
     font-family: var(--font-display);
     font-size: 20px;
     font-weight: 700;
     color: var(--color-ink);
-    margin: 0 0 20px 0;
+    margin: 0;
+}
+
+.monitoring-kecamatan-table-section__last-update {
+    font-size: 12px;
+    color: var(--color-primary-deep);
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: var(--rounded-pill);
+    background-color: rgba(247, 144, 57, 0.12);
+    border: 1.5px solid var(--color-primary);
 }
 
 .monitoring-kecamatan-table-wrapper {
@@ -4106,6 +4125,22 @@ ul, ol {
     flex-shrink: 0;
 }
 
+.pml-table-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.pml-table-last-update {
+    font-size: 12px;
+    color: var(--color-primary-deep);
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: var(--rounded-pill);
+    background-color: rgba(247, 144, 57, 0.12);
+    border: 1.5px solid var(--color-primary);
+}
+
 .pml-table__empty {
     text-align: center;
     color: var(--color-ink-mute);
@@ -4121,6 +4156,12 @@ ul, ol {
 
     .pml-table-search {
         max-width: none;
+    }
+
+    .pml-table-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
     }
 
     .pml-table-count {
@@ -4552,6 +4593,22 @@ ul, ol {
     flex-shrink: 0;
 }
 
+.pcl-table-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.pcl-table-last-update {
+    font-size: 12px;
+    color: var(--color-primary-deep);
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: var(--rounded-pill);
+    background-color: rgba(247, 144, 57, 0.12);
+    border: 1.5px solid var(--color-primary);
+}
+
 .pcl-table__empty {
     text-align: center;
     color: var(--color-ink-mute);
@@ -4567,6 +4624,12 @@ ul, ol {
 
     .pcl-table-search {
         max-width: none;
+    }
+
+    .pcl-table-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
     }
 
     .pcl-table-count {

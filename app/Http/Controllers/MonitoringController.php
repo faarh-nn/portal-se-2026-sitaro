@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KecamatanProgress;
+use App\Models\MonitoringImport;
 use App\Models\OfficerMapping;
 use App\Models\PclPml;
 use App\Models\PclProgress;
@@ -146,6 +147,11 @@ class MonitoringController extends Controller
             ['path' => route('monitoring')]
         );
 
+        // Get last update timestamp from completed imports
+        $lastUpdate = MonitoringImport::where('status', 'completed')
+            ->orderBy('imported_at', 'desc')
+            ->value('imported_at');
+
         return view('monitoring', compact(
             'progressData',
             'totalTarget',
@@ -156,7 +162,8 @@ class MonitoringController extends Controller
             'pclData',
             'pclTotals',
             'pclDataPaginated',
-            'pmlList'
+            'pmlList',
+            'lastUpdate'
         ));
     }
 

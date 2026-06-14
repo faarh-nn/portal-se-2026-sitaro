@@ -1,5 +1,12 @@
 <div class="monitoring-kecamatan-table-section">
-    <h3 class="monitoring-kecamatan-table-section__title">Detail Progress per Kecamatan</h3>
+    <div class="monitoring-kecamatan-table-header">
+        <h3 class="monitoring-kecamatan-table-section__title">Detail Progress per Kecamatan</h3>
+        @if($lastUpdate)
+            <span class="monitoring-kecamatan-table-section__last-update">
+                Kondisi {{ $lastUpdate->setTimezone('Asia/Makassar')->format('j F Y') }} 05.00 WITA
+            </span>
+        @endif
+    </div>
     <div class="monitoring-kecamatan-table-wrapper">
         <table class="monitoring-kecamatan-table">
             <thead>

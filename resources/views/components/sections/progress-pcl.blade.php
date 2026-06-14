@@ -107,7 +107,14 @@
                         </select>
                     </div>
                 </div>
-                <span class="pcl-table-count" x-text="totalCount + ' data'"></span>
+                <div class="pcl-table-meta">
+                    <span class="pcl-table-count" x-text="totalCount + ' data'"></span>
+                    @if($lastUpdate)
+                        <span class="pcl-table-last-update">
+                            Kondisi {{ $lastUpdate->setTimezone('Asia/Makassar')->format('j F Y') }} 05.00 WITA
+                        </span>
+                    @endif
+                </div>
             </div>
 
             <div class="pcl-table-wrapper">

@@ -76,7 +76,14 @@
                         </svg>
                     </button>
                 </div>
-                <span class="pml-table-count" x-text="filteredData.length + ' data'"></span>
+                <div class="pml-table-meta">
+                    <span class="pml-table-count" x-text="filteredData.length + ' data'"></span>
+                    @if($lastUpdate)
+                        <span class="pml-table-last-update">
+                            Kondisi {{ $lastUpdate->setTimezone('Asia/Makassar')->format('j F Y') }} 05.00 WITA
+                        </span>
+                    @endif
+                </div>
             </div>
 
             <div class="pml-table-wrapper">
