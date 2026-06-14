@@ -8,7 +8,9 @@ use App\Models\KecamatanProgress;
 use App\Models\MonitoringImport;
 use App\Models\OfficerMapping;
 use App\Models\PclProgress;
+use App\Models\PclTotalAssignment;
 use App\Models\PmlProgress;
+use App\Models\PmlTotalAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -239,19 +241,25 @@ class ImportController extends Controller
 
         $count = 0;
         $aggregatedData = [];
+        $totalAssignments = [];
 
-        // Aggregate by email (sum status columns, take one value for total_assignment)
+        // First pass: collect unique email + total_assignment, and sum status columns
         foreach (array_slice($rows, 1) as $row) {
             if (empty($row[0])) {
                 continue;
             }
 
             $email = strtolower(trim($row[0]));
+            $totalAssignment = (int) ($row[1] ?? 0);
+
+            // Store unique total_assignment per email (take first value)
+            if (! isset($totalAssignments[$email])) {
+                $totalAssignments[$email] = $totalAssignment;
+            }
 
             if (! isset($aggregatedData[$email])) {
                 $aggregatedData[$email] = [
                     'email' => $email,
-                    'total_assignment' => (int) ($row[1] ?? 0),
                     'open' => 0,
                     'draft' => 0,
                     'submit' => 0,
@@ -268,6 +276,14 @@ class ImportController extends Controller
             $aggregatedData[$email]['approve'] += (int) ($row[6] ?? 0);
             $aggregatedData[$email]['reject'] += (int) ($row[7] ?? 0);
             $aggregatedData[$email]['completed'] += (int) ($row[8] ?? 0);
+        }
+
+        // Save total assignments to separate table
+        foreach ($totalAssignments as $email => $total) {
+            PmlTotalAssignment::updateOrCreate(
+                ['email' => $email],
+                ['total_assignment' => $total]
+            );
         }
 
         // Get officer names
@@ -305,38 +321,48 @@ class ImportController extends Controller
         // Get officer mappings for name lookup
         $officerNames = OfficerMapping::pluck('name', 'email')->toArray();
 
-        // Get PML emails for each block (for now, we'll need to determine PML assignment)
-        // This would ideally come from the Excel data or another mapping table
-
         $count = 0;
         $aggregatedData = [];
+        $totalAssignments = [];
 
-        // Aggregate by email (take one value for total_assignment, sum status columns)
+        // First pass: collect unique email + total_assignment, and sum status columns by email + kecamatan
         foreach (array_slice($rows, 1) as $row) {
             if (empty($row[0])) {
                 continue;
             }
 
             $email = strtolower(trim($row[0]));
+            $totalAssignment = (int) ($row[1] ?? 0);
             $blockId = (string) ($row[2] ?? '');
             $kode7 = substr($blockId, 0, 7);
 
-            // Find matching kecamatan from mapping (take first match only)
-            if (! isset($aggregatedData[$email])) {
-                $kecamatan = null;
-                foreach ($kecamatanMappings as $mapKode => $mapKecamatan) {
-                    if (str_starts_with($kode7, $mapKode)) {
-                        $kecamatan = $mapKecamatan;
-                        break;
-                    }
-                }
+            // Store unique total_assignment per email (take first value)
+            if (! isset($totalAssignments[$email])) {
+                $totalAssignments[$email] = $totalAssignment;
+            }
 
-                $aggregatedData[$email] = [
+            // Find matching kecamatan from mapping
+            $kecamatan = null;
+            foreach ($kecamatanMappings as $mapKode => $mapKecamatan) {
+                if (str_starts_with($kode7, $mapKode)) {
+                    $kecamatan = $mapKecamatan;
+                    break;
+                }
+            }
+
+            // Skip if no kecamatan found
+            if ($kecamatan === null) {
+                continue;
+            }
+
+            // Key by email + kecamatan combination
+            $key = $email.'|'.$kecamatan;
+
+            if (! isset($aggregatedData[$key])) {
+                $aggregatedData[$key] = [
                     'email' => $email,
                     'name' => $officerNames[$email] ?? null,
                     'kecamatan' => $kecamatan,
-                    'pml_email' => null,
-                    'total_assignment' => (int) ($row[1] ?? 0),
                     'open' => 0,
                     'draft' => 0,
                     'submit' => 0,
@@ -346,17 +372,25 @@ class ImportController extends Controller
                 ];
             }
 
-            // Sum status columns only
-            $aggregatedData[$email]['open'] += (int) ($row[3] ?? 0);
-            $aggregatedData[$email]['draft'] += (int) ($row[4] ?? 0);
-            $aggregatedData[$email]['submit'] += (int) ($row[5] ?? 0);
-            $aggregatedData[$email]['approve'] += (int) ($row[6] ?? 0);
-            $aggregatedData[$email]['reject'] += (int) ($row[7] ?? 0);
-            $aggregatedData[$email]['completed'] += (int) ($row[8] ?? 0);
+            // Sum status columns only per email + kecamatan
+            $aggregatedData[$key]['open'] += (int) ($row[3] ?? 0);
+            $aggregatedData[$key]['draft'] += (int) ($row[4] ?? 0);
+            $aggregatedData[$key]['submit'] += (int) ($row[5] ?? 0);
+            $aggregatedData[$key]['approve'] += (int) ($row[6] ?? 0);
+            $aggregatedData[$key]['reject'] += (int) ($row[7] ?? 0);
+            $aggregatedData[$key]['completed'] += (int) ($row[8] ?? 0);
+        }
+
+        // Save total assignments to separate table
+        foreach ($totalAssignments as $email => $total) {
+            PclTotalAssignment::updateOrCreate(
+                ['email' => $email],
+                ['total_assignment' => $total]
+            );
         }
 
         // Save aggregated data
-        foreach ($aggregatedData as $email => $data) {
+        foreach ($aggregatedData as $data) {
             $data['import_id'] = $import->id;
             $data['data_date'] = $dataDate;
             $data['created_at'] = now();
@@ -389,7 +423,7 @@ class ImportController extends Controller
 
         // Aggregate PCL data by kecamatan
         $kecamatanData = PclProgress::where('data_date', $dataDate)
-            ->selectRaw('kecamatan, SUM(total_assignment) as total_assignment, SUM(open) as open, SUM(draft) as draft, SUM(submit) as submit, SUM(approve) as approve, SUM(reject) as reject, SUM(completed) as completed')
+            ->selectRaw('kecamatan, SUM(open) as open, SUM(draft) as draft, SUM(submit) as submit, SUM(approve) as approve, SUM(reject) as reject, SUM(completed) as completed')
             ->groupBy('kecamatan')
             ->get();
 
@@ -401,10 +435,13 @@ class ImportController extends Controller
             // Get kode from kecamatan mapping
             $kode = KecamatanMapping::where('kecamatan', $data->kecamatan)->value('kode');
 
+            // Calculate total_assignment from sum of status columns
+            $totalAssignment = ($data->open ?? 0) + ($data->draft ?? 0) + ($data->submit ?? 0) + ($data->approve ?? 0) + ($data->reject ?? 0) + ($data->completed ?? 0);
+
             KecamatanProgress::create([
                 'kecamatan' => $data->kecamatan,
                 'kode' => $kode,
-                'total_assignment' => $data->total_assignment,
+                'total_assignment' => $totalAssignment,
                 'open' => $data->open,
                 'draft' => $data->draft,
                 'submit' => $data->submit,

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PmlProgress extends Model
 {
@@ -12,7 +13,6 @@ class PmlProgress extends Model
     protected $fillable = [
         'email',
         'name',
-        'total_assignment',
         'open',
         'draft',
         'submit',
@@ -24,7 +24,6 @@ class PmlProgress extends Model
     ];
 
     protected $casts = [
-        'total_assignment' => 'integer',
         'open' => 'integer',
         'draft' => 'integer',
         'submit' => 'integer',
@@ -40,6 +39,14 @@ class PmlProgress extends Model
     public function import(): BelongsTo
     {
         return $this->belongsTo(MonitoringImport::class, 'import_id');
+    }
+
+    /**
+     * Get the total assignment record.
+     */
+    public function totalAssignment(): HasOne
+    {
+        return $this->hasOne(PmlTotalAssignment::class, 'email', 'email');
     }
 
     /**
@@ -59,11 +66,13 @@ class PmlProgress extends Model
      */
     public function getSubmitRatioAttribute(): float
     {
-        if ($this->total_assignment == 0) {
+        $totalAssignment = $this->totalAssignment?->total_assignment ?? 0;
+
+        if ($totalAssignment == 0) {
             return 0;
         }
 
-        return round(($this->submit / $this->total_assignment) * 100, 1);
+        return round(($this->submit / $totalAssignment) * 100, 1);
     }
 
     /**
@@ -71,10 +80,12 @@ class PmlProgress extends Model
      */
     public function getCompletionRatioAttribute(): float
     {
-        if ($this->total_assignment == 0) {
+        $totalAssignment = $this->totalAssignment?->total_assignment ?? 0;
+
+        if ($totalAssignment == 0) {
             return 0;
         }
 
-        return round(($this->completed / $this->total_assignment) * 100, 1);
+        return round(($this->completed / $totalAssignment) * 100, 1);
     }
 }

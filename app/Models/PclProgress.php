@@ -13,8 +13,6 @@ class PclProgress extends Model
         'email',
         'name',
         'kecamatan',
-        'pml_email',
-        'total_assignment',
         'open',
         'draft',
         'submit',
@@ -26,7 +24,6 @@ class PclProgress extends Model
     ];
 
     protected $casts = [
-        'total_assignment' => 'integer',
         'open' => 'integer',
         'draft' => 'integer',
         'submit' => 'integer',
@@ -54,14 +51,6 @@ class PclProgress extends Model
         }
 
         return OfficerMapping::where('email', $this->email)->value('name');
-    }
-
-    /**
-     * Get PML name.
-     */
-    public function getPmlNameAttribute(): ?string
-    {
-        return OfficerMapping::where('email', $this->pml_email)->value('name');
     }
 
     /**

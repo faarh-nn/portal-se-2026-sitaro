@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('kecamatan_mappings', function (Blueprint $table) {
-            $table->string('kode', 10)->change()->comment('7-digit kecamatan code');
+        Schema::create('pcl_pml', function (Blueprint $table) {
+            $table->id();
+            $table->string('pcl_email')->comment('Email PCL');
+            $table->string('pml_email')->nullable()->comment('Email PML dari mapping');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('kecamatan_mappings', function (Blueprint $table) {
-            $table->string('kode', 6)->change();
-        });
+        Schema::dropIfExists('pcl_pml');
     }
 };
