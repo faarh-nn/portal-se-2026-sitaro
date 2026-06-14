@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\KecamatanProgress;
+use App\Models\OfficerMapping;
+use App\Models\PclPml;
+use App\Models\PclProgress;
+use App\Models\PclTotalAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -65,125 +69,61 @@ class MonitoringController extends Controller
             'approved' => array_sum(array_column($pmlData, 'approved')),
         ];
 
-        // PCL (Petugas Pencacah Lapangan) progress data - 63 officers
-        $pclData = [
-            ['name' => 'Abdullah', 'open' => 35, 'submit' => 28, 'reject' => 3, 'completed' => 4, 'target' => 45, 'approved' => 40],
-            ['name' => 'Aisyah', 'open' => 42, 'submit' => 35, 'reject' => 2, 'completed' => 5, 'target' => 50, 'approved' => 30],
-            ['name' => 'Andi', 'open' => 38, 'submit' => 30, 'reject' => 4, 'completed' => 4, 'target' => 48, 'approved' => 26],
-            ['name' => 'Budi', 'open' => 50, 'submit' => 42, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 55],
-            ['name' => 'Dewi', 'open' => 45, 'submit' => 38, 'reject' => 2, 'completed' => 5, 'target' => 52, 'approved' => 33],
-            ['name' => 'Eko', 'open' => 40, 'submit' => 32, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 10],
-            ['name' => 'Fitri', 'open' => 48, 'submit' => 40, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 35],
-            ['name' => 'Gunawan', 'open' => 55, 'submit' => 48, 'reject' => 2, 'completed' => 5, 'target' => 60, 'approved' => 43],
-            ['name' => 'Hendra', 'open' => 32, 'submit' => 25, 'reject' => 3, 'completed' => 4, 'target' => 42, 'approved' => 21],
-            ['name' => 'Ika', 'open' => 44, 'submit' => 36, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 15],
-            ['name' => 'Joko', 'open' => 52, 'submit' => 44, 'reject' => 3, 'completed' => 5, 'target' => 58, 'approved' => 39],
-            ['name' => 'Kartika', 'open' => 46, 'submit' => 38, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 33],
-            ['name' => 'Lestari', 'open' => 41, 'submit' => 33, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 29],
-            ['name' => 'Mahmud', 'open' => 49, 'submit' => 41, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 36],
-            ['name' => 'Nurul', 'open' => 53, 'submit' => 45, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 40],
-            ['name' => 'Putri', 'open' => 47, 'submit' => 39, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 34],
-            ['name' => 'Rahman', 'open' => 39, 'submit' => 31, 'reject' => 4, 'completed' => 4, 'target' => 48, 'approved' => 27],
-            ['name' => 'Siti', 'open' => 54, 'submit' => 46, 'reject' => 2, 'completed' => 6, 'target' => 60, 'approved' => 55],
-            ['name' => 'Tono', 'open' => 43, 'submit' => 35, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 30],
-            ['name' => 'Umar', 'open' => 51, 'submit' => 43, 'reject' => 3, 'completed' => 5, 'target' => 57, 'approved' => 38],
-            ['name' => 'Vina', 'open' => 48, 'submit' => 40, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 35],
-            ['name' => 'Wahyu', 'open' => 56, 'submit' => 48, 'reject' => 2, 'completed' => 6, 'target' => 62, 'approved' => 42],
-            ['name' => 'Yanti', 'open' => 44, 'submit' => 36, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 31],
-            ['name' => 'Zainal', 'open' => 37, 'submit' => 29, 'reject' => 4, 'completed' => 4, 'target' => 46, 'approved' => 25],
-            ['name' => 'Amelia', 'open' => 50, 'submit' => 42, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 37],
-            ['name' => 'Bayu', 'open' => 45, 'submit' => 37, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 32],
-            ['name' => 'Citra', 'open' => 41, 'submit' => 33, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 29],
-            ['name' => 'Dian', 'open' => 53, 'submit' => 45, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 39],
-            ['name' => 'Eri', 'open' => 49, 'submit' => 41, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 36],
-            ['name' => 'Fajar', 'open' => 46, 'submit' => 38, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 33],
-            ['name' => 'Galuh', 'open' => 42, 'submit' => 34, 'reject' => 3, 'completed' => 5, 'target' => 50, 'approved' => 29],
-            ['name' => 'Hari', 'open' => 55, 'submit' => 47, 'reject' => 2, 'completed' => 6, 'target' => 60, 'approved' => 41],
-            ['name' => 'Irfan', 'open' => 38, 'submit' => 30, 'reject' => 4, 'completed' => 4, 'target' => 48, 'approved' => 26],
-            ['name' => 'Jasmine', 'open' => 52, 'submit' => 44, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 38],
-            ['name' => 'Kiki', 'open' => 47, 'submit' => 39, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 34],
-            ['name' => 'Lia', 'open' => 43, 'submit' => 35, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 30],
-            ['name' => 'Mila', 'open' => 51, 'submit' => 43, 'reject' => 3, 'completed' => 5, 'target' => 57, 'approved' => 38],
-            ['name' => 'Nanda', 'open' => 40, 'submit' => 32, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 28],
-            ['name' => 'Oki', 'open' => 54, 'submit' => 46, 'reject' => 2, 'completed' => 6, 'target' => 60, 'approved' => 40],
-            ['name' => 'Puspita', 'open' => 48, 'submit' => 40, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 35],
-            ['name' => 'Qori', 'open' => 44, 'submit' => 36, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 31],
-            ['name' => 'Rani', 'open' => 49, 'submit' => 41, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 36],
-            ['name' => 'Santi', 'open' => 46, 'submit' => 38, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 33],
-            ['name' => 'Tika', 'open' => 53, 'submit' => 45, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 39],
-            ['name' => 'Ulfa', 'open' => 41, 'submit' => 33, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 29],
-            ['name' => 'Vera', 'open' => 50, 'submit' => 42, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 37],
-            ['name' => 'Wati', 'open' => 45, 'submit' => 37, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 32],
-            ['name' => 'Yuni', 'open' => 52, 'submit' => 44, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 38],
-            ['name' => 'Zahra', 'open' => 47, 'submit' => 39, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 34],
-            ['name' => 'Adi', 'open' => 39, 'submit' => 31, 'reject' => 4, 'completed' => 4, 'target' => 48, 'approved' => 27],
-            ['name' => 'Bella', 'open' => 55, 'submit' => 47, 'reject' => 2, 'completed' => 6, 'target' => 60, 'approved' => 41],
-            ['name' => 'Candra', 'open' => 42, 'submit' => 34, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 30],
-            ['name' => 'Diah', 'open' => 48, 'submit' => 40, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 35],
-            ['name' => 'Eka', 'open' => 44, 'submit' => 36, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 31],
-            ['name' => 'Feri', 'open' => 51, 'submit' => 43, 'reject' => 3, 'completed' => 5, 'target' => 57, 'approved' => 38],
-            ['name' => 'Gita', 'open' => 46, 'submit' => 38, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 33],
-            ['name' => 'Hana', 'open' => 53, 'submit' => 45, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 39],
-            ['name' => 'Indra', 'open' => 40, 'submit' => 32, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 28],
-            ['name' => 'Juni', 'open' => 49, 'submit' => 41, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 36],
-            ['name' => 'Krisna', 'open' => 54, 'submit' => 46, 'reject' => 2, 'completed' => 6, 'target' => 60, 'approved' => 53],
-            ['name' => 'Lina', 'open' => 47, 'submit' => 39, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 34],
-            ['name' => 'Mila', 'open' => 43, 'submit' => 35, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 30],
-            ['name' => 'Nia', 'open' => 50, 'submit' => 42, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 37],
-            ['name' => 'Omar', 'open' => 45, 'submit' => 37, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 32],
-        ];
+        // PCL (Petugas Pencacah Lapangan) progress data from database
+        // Group by email to get aggregated progress for each PCL
+        $pclProgressData = PclProgress::selectRaw('
+            email,
+            SUM(open) as open,
+            SUM(submit) as submit,
+            SUM(reject) as reject,
+            SUM(completed) as completed
+        ')->groupBy('email')->get();
 
-        // PML to PCL mapping (each PML oversees 4-6 PCL)
-        $pmlNames = array_column($pmlData, 'name');
-        $pmlIndex = 0;
-        $pclPerPmlCount = [];
-        $pclToPmlMap = [];
+        // Get PCL total assignments
+        $pclTotalAssignments = PclTotalAssignment::pluck('total_assignment', 'email');
 
-        foreach ($pclData as $index => $pcl) {
-            if ($pmlIndex >= count($pmlNames)) {
-                $pmlIndex = 0;
-            }
+        // Get PCL to PML mapping
+        $pclPmlMappings = PclPml::with('pml')->get()->keyBy('pcl_email');
 
-            if (! isset($pclPerPmlCount[$pmlIndex])) {
-                $pclPerPmlCount[$pmlIndex] = 0;
-            }
+        // Get all PML names for filter dropdown
+        $pmlList = OfficerMapping::where('type', 'PML')->pluck('name')->toArray();
+        sort($pmlList);
 
-            $maxPclPerPml = ($pmlIndex < 4) ? 6 : 5;
-            if ($pclPerPmlCount[$pmlIndex] >= $maxPclPerPml) {
-                $pmlIndex++;
-                if ($pmlIndex >= count($pmlNames)) {
-                    $pmlIndex = 0;
-                }
-                $pclPerPmlCount[$pmlIndex] = 0;
-            }
+        // Format PCL data
+        $pclData = [];
+        foreach ($pclProgressData as $pcl) {
+            $officer = OfficerMapping::where('email', $pcl->email)->first();
+            $pclName = $officer->name ?? $pcl->email;
 
-            $pclToPmlMap[$index] = $pmlNames[$pmlIndex];
-            $pclPerPmlCount[$pmlIndex]++;
-        }
+            // Get PML name from mapping
+            $pmlMapping = $pclPmlMappings->get($pcl->email);
+            $pmlName = $pmlMapping && $pmlMapping->pml ? $pmlMapping->pml->name : '-';
 
-        // Assign PML to each PCL
-        foreach ($pclData as $index => &$pcl) {
-            $pcl['pml'] = $pclToPmlMap[$index];
-        }
+            $totalAssignment = $pclTotalAssignments[$pcl->email] ?? 0;
+            $submitRatio = $totalAssignment > 0
+                ? round(($pcl->submit / $totalAssignment) * 100, 1)
+                : 0;
 
-        // Calculate PCL progress percentage and submit ratio
-        foreach ($pclData as &$pcl) {
-            $pcl['progress'] = $pcl['target'] > 0 ? round(($pcl['approved'] / $pcl['target']) * 100, 1) : 0;
-            $pcl['submit_ratio'] = $pcl['target'] > 0 ? round(($pcl['submit'] / $pcl['target']) * 100, 1) : 0;
+            $pclData[] = [
+                'name' => $pclName,
+                'email' => $pcl->email,
+                'open' => $pcl->open,
+                'submit' => $pcl->submit,
+                'reject' => $pcl->reject,
+                'completed' => $pcl->completed,
+                'target' => $totalAssignment,
+                'pml' => $pmlName,
+                'submit_ratio' => $submitRatio,
+            ];
         }
 
         // Calculate PCL totals
         $pclTotals = [
-            'open' => array_sum(array_column($pclData, 'open')),
-            'submit' => array_sum(array_column($pclData, 'submit')),
-            'reject' => array_sum(array_column($pclData, 'reject')),
-            'completed' => array_sum(array_column($pclData, 'completed')),
-            'approved' => array_sum(array_column($pclData, 'approved')),
+            'open' => $pclProgressData->sum('open'),
+            'submit' => $pclProgressData->sum('submit'),
+            'reject' => $pclProgressData->sum('reject'),
+            'completed' => $pclProgressData->sum('completed'),
         ];
-
-        // Get unique PML names for filtering dropdown
-        $pmlList = array_unique(array_column($pclData, 'pml'));
-        sort($pmlList);
 
         // Paginate PCL data (10 per page) using Laravel's LengthAwarePaginator
         $pclDataPaginated = new LengthAwarePaginator(
@@ -213,127 +153,50 @@ class MonitoringController extends Controller
         $page = $request->get('page', 1);
         $search = $request->get('search', '');
         $pmlFilter = $request->get('pml', '');
+        $sortBy = $request->get('sortBy', '');
+        $sortDirection = $request->get('sortDirection', 'asc');
 
-        // PCL data - same as in index method
-        $pclData = [
-            ['name' => 'Abdullah', 'open' => 35, 'submit' => 28, 'reject' => 3, 'completed' => 4, 'target' => 45, 'approved' => 40],
-            ['name' => 'Aisyah', 'open' => 42, 'submit' => 35, 'reject' => 2, 'completed' => 5, 'target' => 50, 'approved' => 30],
-            ['name' => 'Andi', 'open' => 38, 'submit' => 30, 'reject' => 4, 'completed' => 4, 'target' => 48, 'approved' => 26],
-            ['name' => 'Budi', 'open' => 50, 'submit' => 42, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 39],
-            ['name' => 'Dewi', 'open' => 45, 'submit' => 38, 'reject' => 2, 'completed' => 5, 'target' => 52, 'approved' => 33],
-            ['name' => 'Eko', 'open' => 40, 'submit' => 32, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 28],
-            ['name' => 'Fitri', 'open' => 48, 'submit' => 40, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 35],
-            ['name' => 'Gunawan', 'open' => 55, 'submit' => 48, 'reject' => 2, 'completed' => 5, 'target' => 60, 'approved' => 43],
-            ['name' => 'Hendra', 'open' => 32, 'submit' => 25, 'reject' => 3, 'completed' => 4, 'target' => 42, 'approved' => 21],
-            ['name' => 'Ika', 'open' => 44, 'submit' => 36, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 31],
-            ['name' => 'Joko', 'open' => 52, 'submit' => 44, 'reject' => 3, 'completed' => 5, 'target' => 58, 'approved' => 39],
-            ['name' => 'Kartika', 'open' => 46, 'submit' => 38, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 33],
-            ['name' => 'Lestari', 'open' => 41, 'submit' => 33, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 29],
-            ['name' => 'Mahmud', 'open' => 49, 'submit' => 41, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 36],
-            ['name' => 'Nurul', 'open' => 53, 'submit' => 45, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 40],
-            ['name' => 'Putri', 'open' => 47, 'submit' => 39, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 34],
-            ['name' => 'Rahman', 'open' => 39, 'submit' => 31, 'reject' => 4, 'completed' => 4, 'target' => 48, 'approved' => 27],
-            ['name' => 'Siti', 'open' => 54, 'submit' => 46, 'reject' => 2, 'completed' => 6, 'target' => 60, 'approved' => 55],
-            ['name' => 'Tono', 'open' => 43, 'submit' => 35, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 30],
-            ['name' => 'Umar', 'open' => 51, 'submit' => 43, 'reject' => 3, 'completed' => 5, 'target' => 57, 'approved' => 38],
-            ['name' => 'Vina', 'open' => 48, 'submit' => 40, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 35],
-            ['name' => 'Wahyu', 'open' => 56, 'submit' => 48, 'reject' => 2, 'completed' => 6, 'target' => 62, 'approved' => 42],
-            ['name' => 'Yanti', 'open' => 44, 'submit' => 36, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 31],
-            ['name' => 'Zainal', 'open' => 37, 'submit' => 29, 'reject' => 4, 'completed' => 4, 'target' => 46, 'approved' => 25],
-            ['name' => 'Amelia', 'open' => 50, 'submit' => 42, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 37],
-            ['name' => 'Bayu', 'open' => 45, 'submit' => 37, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 32],
-            ['name' => 'Citra', 'open' => 41, 'submit' => 33, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 29],
-            ['name' => 'Dian', 'open' => 53, 'submit' => 45, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 39],
-            ['name' => 'Eri', 'open' => 49, 'submit' => 41, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 36],
-            ['name' => 'Fajar', 'open' => 46, 'submit' => 38, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 33],
-            ['name' => 'Galuh', 'open' => 42, 'submit' => 34, 'reject' => 3, 'completed' => 5, 'target' => 50, 'approved' => 29],
-            ['name' => 'Hari', 'open' => 55, 'submit' => 47, 'reject' => 2, 'completed' => 6, 'target' => 60, 'approved' => 41],
-            ['name' => 'Irfan', 'open' => 38, 'submit' => 30, 'reject' => 4, 'completed' => 4, 'target' => 48, 'approved' => 26],
-            ['name' => 'Jasmine', 'open' => 52, 'submit' => 44, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 38],
-            ['name' => 'Kiki', 'open' => 47, 'submit' => 39, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 34],
-            ['name' => 'Lia', 'open' => 43, 'submit' => 35, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 30],
-            ['name' => 'Mila', 'open' => 51, 'submit' => 43, 'reject' => 3, 'completed' => 5, 'target' => 57, 'approved' => 38],
-            ['name' => 'Nanda', 'open' => 40, 'submit' => 32, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 28],
-            ['name' => 'Oki', 'open' => 54, 'submit' => 46, 'reject' => 2, 'completed' => 6, 'target' => 60, 'approved' => 40],
-            ['name' => 'Puspita', 'open' => 48, 'submit' => 40, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 35],
-            ['name' => 'Qori', 'open' => 44, 'submit' => 36, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 31],
-            ['name' => 'Rani', 'open' => 49, 'submit' => 41, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 36],
-            ['name' => 'Santi', 'open' => 46, 'submit' => 38, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 33],
-            ['name' => 'Tika', 'open' => 53, 'submit' => 45, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 39],
-            ['name' => 'Ulfa', 'open' => 41, 'submit' => 33, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 29],
-            ['name' => 'Vera', 'open' => 50, 'submit' => 42, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 37],
-            ['name' => 'Wati', 'open' => 45, 'submit' => 37, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 32],
-            ['name' => 'Yuni', 'open' => 52, 'submit' => 44, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 38],
-            ['name' => 'Zahra', 'open' => 47, 'submit' => 39, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 34],
-            ['name' => 'Adi', 'open' => 39, 'submit' => 31, 'reject' => 4, 'completed' => 4, 'target' => 48, 'approved' => 27],
-            ['name' => 'Bella', 'open' => 55, 'submit' => 47, 'reject' => 2, 'completed' => 6, 'target' => 60, 'approved' => 41],
-            ['name' => 'Candra', 'open' => 42, 'submit' => 34, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 30],
-            ['name' => 'Diah', 'open' => 48, 'submit' => 40, 'reject' => 3, 'completed' => 5, 'target' => 55, 'approved' => 35],
-            ['name' => 'Eka', 'open' => 44, 'submit' => 36, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 31],
-            ['name' => 'Feri', 'open' => 51, 'submit' => 43, 'reject' => 3, 'completed' => 5, 'target' => 57, 'approved' => 38],
-            ['name' => 'Gita', 'open' => 46, 'submit' => 38, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 33],
-            ['name' => 'Hana', 'open' => 53, 'submit' => 45, 'reject' => 2, 'completed' => 6, 'target' => 58, 'approved' => 39],
-            ['name' => 'Indra', 'open' => 40, 'submit' => 32, 'reject' => 4, 'completed' => 4, 'target' => 50, 'approved' => 28],
-            ['name' => 'Juni', 'open' => 49, 'submit' => 41, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 36],
-            ['name' => 'Krisna', 'open' => 54, 'submit' => 46, 'reject' => 2, 'completed' => 6, 'target' => 60, 'approved' => 53],
-            ['name' => 'Lina', 'open' => 47, 'submit' => 39, 'reject' => 3, 'completed' => 5, 'target' => 54, 'approved' => 34],
-            ['name' => 'Mila', 'open' => 43, 'submit' => 35, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 30],
-            ['name' => 'Nia', 'open' => 50, 'submit' => 42, 'reject' => 3, 'completed' => 5, 'target' => 56, 'approved' => 37],
-            ['name' => 'Omar', 'open' => 45, 'submit' => 37, 'reject' => 3, 'completed' => 5, 'target' => 52, 'approved' => 32],
-        ];
+        // PCL progress data from database
+        $pclProgressData = PclProgress::selectRaw('
+            email,
+            SUM(open) as open,
+            SUM(submit) as submit,
+            SUM(reject) as reject,
+            SUM(completed) as completed
+        ')->groupBy('email')->get();
 
-        // PML names for mapping (same as in index method)
-        $pmlDataForMapping = [
-            ['name' => 'Al Fitri'],
-            ['name' => 'Dade Chee'],
-            ['name' => 'Deswita'],
-            ['name' => 'Gracia Undap'],
-            ['name' => 'Hermita Kakalang'],
-            ['name' => 'Linsa'],
-            ['name' => 'Mama Aim'],
-            ['name' => 'Mauren Devina Lombone'],
-            ['name' => 'Papa Opo'],
-            ['name' => 'Pareda'],
-            ['name' => 'Trisna Jacob'],
-            ['name' => 'Ungke'],
-        ];
+        // Get PCL total assignments
+        $pclTotalAssignments = PclTotalAssignment::pluck('total_assignment', 'email');
 
-        // PML to PCL mapping
-        $pmlNames = array_column($pmlDataForMapping, 'name');
-        $pmlIndex = 0;
-        $pclPerPmlCount = [];
-        $pclToPmlMap = [];
+        // Get PCL to PML mapping
+        $pclPmlMappings = PclPml::with('pml')->get()->keyBy('pcl_email');
 
-        foreach ($pclData as $index => $pcl) {
-            if ($pmlIndex >= count($pmlNames)) {
-                $pmlIndex = 0;
-            }
+        // Format PCL data
+        $pclData = [];
+        foreach ($pclProgressData as $pcl) {
+            $officer = OfficerMapping::where('email', $pcl->email)->first();
+            $pclName = $officer->name ?? $pcl->email;
 
-            if (! isset($pclPerPmlCount[$pmlIndex])) {
-                $pclPerPmlCount[$pmlIndex] = 0;
-            }
+            // Get PML name from mapping
+            $pmlMapping = $pclPmlMappings->get($pcl->email);
+            $pmlName = $pmlMapping && $pmlMapping->pml ? $pmlMapping->pml->name : '-';
 
-            $maxPclPerPml = ($pmlIndex < 4) ? 6 : 5;
-            if ($pclPerPmlCount[$pmlIndex] >= $maxPclPerPml) {
-                $pmlIndex++;
-                if ($pmlIndex >= count($pmlNames)) {
-                    $pmlIndex = 0;
-                }
-                $pclPerPmlCount[$pmlIndex] = 0;
-            }
+            $totalAssignment = $pclTotalAssignments[$pcl->email] ?? 0;
+            $submitRatio = $totalAssignment > 0
+                ? round(($pcl->submit / $totalAssignment) * 100, 1)
+                : 0;
 
-            $pclToPmlMap[$index] = $pmlNames[$pmlIndex];
-            $pclPerPmlCount[$pmlIndex]++;
-        }
-
-        // Assign PML to each PCL
-        foreach ($pclData as $index => &$pcl) {
-            $pcl['pml'] = $pclToPmlMap[$index];
-        }
-
-        foreach ($pclData as &$pcl) {
-            $pcl['progress'] = $pcl['target'] > 0 ? round(($pcl['approved'] / $pcl['target']) * 100, 1) : 0;
-            $pcl['submit_ratio'] = $pcl['target'] > 0 ? round(($pcl['submit'] / $pcl['target']) * 100, 1) : 0;
+            $pclData[] = [
+                'name' => $pclName,
+                'email' => $pcl->email,
+                'open' => $pcl->open,
+                'submit' => $pcl->submit,
+                'reject' => $pcl->reject,
+                'completed' => $pcl->completed,
+                'target' => $totalAssignment,
+                'pml' => $pmlName,
+                'submit_ratio' => $submitRatio,
+            ];
         }
 
         // Filter by search if provided
@@ -354,9 +217,7 @@ class MonitoringController extends Controller
         }
 
         // Sort by column if provided
-        $sortBy = $request->get('sortBy', '');
-        $sortDirection = $request->get('sortDirection', 'asc');
-        if ($sortBy && in_array($sortBy, ['submit_ratio', 'progress'])) {
+        if ($sortBy && in_array($sortBy, ['submit_ratio'])) {
             usort($pclData, function ($a, $b) use ($sortBy, $sortDirection) {
                 if ($sortDirection === 'asc') {
                     return $a[$sortBy] <=> $b[$sortBy];
