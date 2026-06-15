@@ -3,7 +3,7 @@
         <h3 class="monitoring-kecamatan-table-section__title">Detail Progress per Kecamatan</h3>
         @if($lastUpdate)
             <span class="monitoring-kecamatan-table-section__last-update">
-                Kondisi {{ $lastUpdate->setTimezone('Asia/Makassar')->format('j F Y') }} 05.00 WITA
+                Kondisi {{ $lastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
             </span>
         @endif
     </div>

@@ -111,7 +111,7 @@
                     <span class="pcl-table-count" x-text="totalCount + ' data'"></span>
                     @if($lastUpdate)
                         <span class="pcl-table-last-update">
-                            Kondisi {{ $lastUpdate->setTimezone('Asia/Makassar')->format('j F Y') }} 05.00 WITA
+                            Kondisi {{ $lastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
                         </span>
                     @endif
                 </div>
@@ -280,7 +280,7 @@
 
             e.preventDefault();
             const page = btn.dataset.page;
-            const alpineData = document.querySelector('[x-data]').__x.$data;
+            const alpineData = Alpine.$data(document.querySelector('.pcl-section'));
             const search = alpineData.search;
             const pmlFilter = alpineData.pmlFilter;
             const sortBy = alpineData.sortBy;
@@ -307,8 +307,8 @@
                 .then(data => {
                     tableBody.innerHTML = data.html;
                     paginationWrapperEl.innerHTML = data.pagination;
-                    document.querySelector('[x-data]').__x.$data.currentPage = page;
-                    document.querySelector('[x-data]').__x.$data.totalCount = data.total;
+                    alpineData.currentPage = page;
+                    alpineData.totalCount = data.total;
                 })
                 .catch(error => console.error('Error loading page:', error));
         });

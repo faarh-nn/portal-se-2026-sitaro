@@ -15,6 +15,7 @@
     --color-on-primary: #ffffff;
     --color-ink: #231f20;
     --color-ink-mute: #696969;
+    --color-ink-ghost: rgba(35, 31, 32, 0.15);
     --color-link-blue: #00a6fb;
     --color-link-hover: #00a6fb;
     --color-canvas-hero: #fff6dd;
@@ -73,6 +74,23 @@ body {
     -moz-osx-font-smoothing: grayscale;
     background-color: var(--color-canvas);
     overflow-x: hidden;
+}
+
+/* -----------------------------------------
+   Background Grid Pattern
+   ----------------------------------------- */
+.bg-grid {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(var(--color-ink-ghost) 1px, transparent 1px),
+        linear-gradient(90deg, var(--color-ink-ghost) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 30%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 30%, transparent 100%);
+    opacity: 0.35;
 }
 
 a {
@@ -3519,7 +3537,7 @@ ul, ol {
    Monitoring Progress Section
    ----------------------------------------- */
 .monitoring-section {
-    background-color: var(--color-canvas);
+    background-color: transparent;
     padding: 72px var(--spacing-xxl) 64px var(--spacing-xxl);
     position: relative;
     z-index: 1;
@@ -3591,7 +3609,9 @@ ul, ol {
     gap: 16px;
     padding: 20px 24px;
     border-radius: var(--rounded-lg);
-    background-color: var(--color-surface-elev);
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
@@ -3765,7 +3785,9 @@ ul, ol {
 
 /* Monitoring Table Section */
 .monitoring-kecamatan-table-section {
-    background-color: var(--color-surface-elev);
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-radius: var(--rounded-xl);
     padding: 24px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
@@ -3928,6 +3950,7 @@ ul, ol {
 .pml-section {
     margin-top: 48px;
     margin-bottom: 64px;
+    background-color: transparent;
 }
 
 .pml-section__header {
@@ -3996,7 +4019,9 @@ ul, ol {
     gap: 12px;
     padding: 16px;
     border-radius: var(--rounded-lg);
-    background-color: var(--color-canvas);
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--color-hairline);
 }
 
@@ -4057,6 +4082,11 @@ ul, ol {
 }
 
 .pml-table-section {
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: var(--rounded-xl);
+    padding: 24px;
     overflow: hidden;
 }
 
@@ -4356,6 +4386,7 @@ ul, ol {
 .pcl-section {
     margin-top: 64px;
     margin-bottom: 64px;
+    background-color: transparent;
 }
 
 .pcl-section__header {
@@ -4424,7 +4455,9 @@ ul, ol {
     gap: 12px;
     padding: 16px;
     border-radius: var(--rounded-lg);
-    background-color: var(--color-canvas);
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--color-hairline);
 }
 
@@ -4485,6 +4518,11 @@ ul, ol {
 }
 
 .pcl-table-section {
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: var(--rounded-xl);
+    padding: 24px;
     overflow: hidden;
 }
 

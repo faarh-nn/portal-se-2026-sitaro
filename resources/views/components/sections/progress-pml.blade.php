@@ -80,7 +80,7 @@
                     <span class="pml-table-count" x-text="filteredData.length + ' data'"></span>
                     @if($lastUpdate)
                         <span class="pml-table-last-update">
-                            Kondisi {{ $lastUpdate->setTimezone('Asia/Makassar')->format('j F Y') }} 05.00 WITA
+                            Kondisi {{ $lastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
                         </span>
                     @endif
                 </div>

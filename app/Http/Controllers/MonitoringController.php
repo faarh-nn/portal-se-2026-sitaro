@@ -150,7 +150,7 @@ class MonitoringController extends Controller
         // Get last update timestamp from completed imports
         $lastUpdate = MonitoringImport::where('status', 'completed')
             ->orderBy('imported_at', 'desc')
-            ->value('imported_at');
+            ->first();
 
         return view('monitoring', compact(
             'progressData',
