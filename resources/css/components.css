@@ -1051,6 +1051,19 @@ ul, ol {
     padding-top: 32px;
 }
 
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(35, 31, 32, 0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(35, 31, 32, 0.15) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 30%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 30%, transparent 100%);
+}
 
 .hero__content {
     position: relative;
@@ -1307,6 +1320,9 @@ ul, ol {
 .hero__wave {
     color: var(--color-canvas-cream);
     display: block;
+    position: relative;
+    z-index: 5;
+    margin-top: -2px;
 }
 
 /* -----------------------------------------
@@ -2012,7 +2028,7 @@ ul, ol {
    Gmap Section
    ----------------------------------------- */
 .gmaps-section {
-    background-color: var(--color-canvas);
+    background-color: transparent;
     padding: 64px var(--spacing-xxl);
     position: relative;
     z-index: 1;
@@ -2087,7 +2103,9 @@ ul, ol {
     gap: 16px;
     padding: 20px 24px;
     border-radius: var(--rounded-lg);
-    background-color: var(--color-surface-elev);
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
@@ -2250,7 +2268,9 @@ ul, ol {
    ----------------------------------------- */
 .gmaps-table-section {
     margin-top: 32px;
-    background-color: var(--color-surface-elev);
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-radius: var(--rounded-xl);
     padding: 24px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
@@ -2553,7 +2573,7 @@ ul, ol {
    SE Tujuan Section
    ----------------------------------------- */
 .se-tujuan-section {
-    background-color: var(--color-canvas-cream);
+    background-color: transparent;
     padding: 64px var(--spacing-xxl);
     position: relative;
     z-index: 1;
@@ -2884,7 +2904,7 @@ ul, ol {
    Timeline Section
    ----------------------------------------- */
 .timeline-section {
-    background-color: var(--color-canvas);
+    background-color: transparent;
     padding: 64px var(--spacing-xxl);
     position: relative;
     z-index: 1;
@@ -3023,7 +3043,9 @@ ul, ol {
         flex-direction: row;
         align-items: flex-start;
         text-align: left;
-        background-color: var(--color-surface-elev);
+        background-color: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         border-radius: var(--rounded-lg);
         padding: 16px;
         gap: 16px;
@@ -3212,7 +3234,7 @@ ul, ol {
    Petugas Section
    ----------------------------------------- */
 .petugas-section {
-    background-color: var(--color-canvas-cream);
+    background-color: transparent;
     padding: 64px var(--spacing-xxl);
     position: relative;
     z-index: 1;
@@ -3493,7 +3515,9 @@ ul, ol {
     display: flex;
     align-items: flex-start;
     gap: 16px;
-    background-color: var(--color-canvas);
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--color-hairline);
     border-radius: var(--rounded-lg);
     padding: 20px 24px;
@@ -3538,10 +3562,9 @@ ul, ol {
    ----------------------------------------- */
 .monitoring-section {
     background-color: transparent;
-    padding: 72px var(--spacing-xxl) 64px var(--spacing-xxl);
+    padding: 72px var(--spacing-xxl) 30px var(--spacing-xxl);
     position: relative;
     z-index: 1;
-    padding-top: 120px;
 }
 
 .monitoring-section__header {
@@ -3792,6 +3815,7 @@ ul, ol {
     padding: 24px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
     overflow: hidden;
+    margin-bottom: 64px;
 }
 
 .monitoring-kecamatan-table-header {
@@ -3949,7 +3973,6 @@ ul, ol {
    ----------------------------------------- */
 .pml-section {
     margin-top: 48px;
-    margin-bottom: 64px;
     background-color: transparent;
 }
 
@@ -4387,6 +4410,7 @@ ul, ol {
     margin-top: 64px;
     margin-bottom: 64px;
     background-color: transparent;
+    padding-top: 80px;
 }
 
 .pcl-section__header {
