@@ -7,6 +7,7 @@ use App\Models\KecamatanMapping;
 use App\Models\KecamatanProgress;
 use App\Models\MonitoringImport;
 use App\Models\OfficerMapping;
+use App\Models\PclDailySubmit;
 use App\Models\PclProgress;
 use App\Models\PclTotalAssignment;
 use App\Models\PmlProgress;
@@ -214,6 +215,9 @@ class ImportController extends Controller
 
             // Generate kecamatan progress from PCL data
             $this->generateKecamatanProgress($dataDate);
+
+            // Calculate and store daily submits for PCL leaderboard
+            $this->calculateDailySubmits($dataDate);
 
             DB::commit();
 
@@ -471,9 +475,79 @@ class ImportController extends Controller
         MonitoringImport::truncate();
         OfficerMapping::truncate();
         KecamatanMapping::truncate();
+        PclDailySubmit::truncate();
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         return redirect()->back()->with('success', 'Semua data berhasil dihapus.');
+    }
+
+    /**
+     * Calculate and store daily submit values for PCL leaderboard.
+     *
+     * This calculates the difference between current import and previous import
+     * to get the daily submit value (since data is cumulative).
+     */
+    private function calculateDailySubmits(string $dataDate): void
+    {
+        // Get the latest import before this date (for comparison)
+        $previousImport = MonitoringImport::where('type', 'data_pcl')
+            ->where('status', 'completed')
+            ->where('imported_at', '<', function ($query) use ($dataDate) {
+                $query->select(DB::raw('MAX(imported_at)'))
+                    ->from('monitoring_imports')
+                    ->where('type', 'data_pcl')
+                    ->where('status', 'completed')
+                    ->where('imported_at', '<', $dataDate);
+            })
+            ->orderByDesc('imported_at')
+            ->first();
+
+        // Get current aggregated data by email
+        $currentData = PclProgress::where('data_date', $dataDate)
+            ->selectRaw('email, name, SUM(submit) as submit')
+            ->groupBy('email', 'name')
+            ->get()
+            ->keyBy('email');
+
+        // Get previous aggregated data by email (if exists)
+        $previousData = collect();
+        if ($previousImport) {
+            $previousData = PclProgress::where('import_id', $previousImport->id)
+                ->selectRaw('email, name, SUM(submit) as submit')
+                ->groupBy('email', 'name')
+                ->get()
+                ->keyBy('email');
+        }
+
+        // Get kecamatans for each email from current data
+        $kecamatanByEmail = PclProgress::where('data_date', $dataDate)
+            ->select('email', 'kecamatan')
+            ->get()
+            ->groupBy('email')
+            ->map(function ($items) {
+                return $items->pluck('kecamatan')->filter()->unique()->values()->toArray();
+            });
+
+        // Process each PCL
+        foreach ($currentData as $email => $data) {
+            $currentSubmit = $data->submit ?? 0;
+            $previousSubmit = $previousData->get($email)?->submit ?? 0;
+            $dailySubmit = max(0, $currentSubmit - $previousSubmit);
+            $targetMet = $dailySubmit >= 10;
+
+            $kecamatans = $kecamatanByEmail->get($email, []);
+
+            PclDailySubmit::updateOrCreate(
+                ['email' => $email, 'data_date' => $dataDate],
+                [
+                    'name' => $data->name,
+                    'kecamatan' => $kecamatans,
+                    'daily_submit' => $dailySubmit,
+                    'total_submit' => $currentSubmit,
+                    'target_met' => $targetMet,
+                ]
+            );
+        }
     }
 }

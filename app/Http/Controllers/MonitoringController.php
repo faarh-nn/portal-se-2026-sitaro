@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\KecamatanProgress;
 use App\Models\MonitoringImport;
 use App\Models\OfficerMapping;
+use App\Models\PclDailySubmit;
 use App\Models\PclPml;
 use App\Models\PclProgress;
 use App\Models\PclTotalAssignment;
@@ -147,6 +148,43 @@ class MonitoringController extends Controller
             ['path' => route('monitoring')]
         );
 
+        // Get latest leaderboard data from pcl_daily_submits
+        $latestDataDate = PclDailySubmit::orderByDesc('data_date')->value('data_date');
+
+        if ($latestDataDate) {
+            $leaderboardQuery = PclDailySubmit::where('data_date', $latestDataDate)
+                ->orderByDesc('daily_submit')
+                ->orderBy('name');
+
+            $leaderboardData = $leaderboardQuery->get()->map(function ($item) {
+                return [
+                    'name' => $item->name ?? $item->email,
+                    'email' => $item->email,
+                    'daily_submit' => $item->daily_submit,
+                    'total_submit' => $item->total_submit,
+                    'target_met' => $item->target_met,
+                    'kecamatan_string' => $item->kecamatan_string,
+                ];
+            });
+
+            // Paginate leaderboard data (5 per page)
+            $leaderboardPerPage = 5;
+            $leaderboardPage = (int) request()->get('leaderboard_page', 1);
+            $leaderboardOffset = ($leaderboardPage - 1) * $leaderboardPerPage;
+            $leaderboardSliced = $leaderboardData->slice($leaderboardOffset, $leaderboardPerPage)->values();
+
+            $leaderboardDataPaginated = new LengthAwarePaginator(
+                $leaderboardSliced,
+                $leaderboardData->count(),
+                $leaderboardPerPage,
+                $leaderboardPage,
+                ['path' => route('monitoring', ['tab' => 'leaderboard'])]
+            );
+        } else {
+            $leaderboardData = collect();
+            $leaderboardDataPaginated = new LengthAwarePaginator([], 0, 5, 1, ['path' => route('monitoring')]);
+        }
+
         // Get last update timestamp from completed imports
         $lastUpdate = MonitoringImport::where('status', 'completed')
             ->orderBy('imported_at', 'desc')
@@ -163,7 +201,9 @@ class MonitoringController extends Controller
             'pclTotals',
             'pclDataPaginated',
             'pmlList',
-            'lastUpdate'
+            'lastUpdate',
+            'leaderboardData',
+            'leaderboardDataPaginated',
         ));
     }
 
@@ -267,6 +307,58 @@ class MonitoringController extends Controller
                 'pclPaginated' => $pclPaginated,
             ])->render(),
             'total' => $totalCount,
+        ]);
+    }
+
+    public function getLeaderboardPage(Request $request)
+    {
+        $page = (int) $request->get('page', 1);
+        $perPage = 5;
+
+        // Get latest leaderboard data
+        $latestDataDate = PclDailySubmit::orderByDesc('data_date')->value('data_date');
+
+        $leaderboardData = collect();
+
+        if ($latestDataDate) {
+            $leaderboardQuery = PclDailySubmit::where('data_date', $latestDataDate)
+                ->orderByDesc('daily_submit')
+                ->orderBy('name');
+
+            $allData = $leaderboardQuery->get()->map(function ($item) {
+                return [
+                    'name' => $item->name ?? $item->email,
+                    'email' => $item->email,
+                    'daily_submit' => $item->daily_submit,
+                    'total_submit' => $item->total_submit,
+                    'target_met' => $item->target_met,
+                    'kecamatan_string' => $item->kecamatan_string,
+                ];
+            });
+
+            $offset = ($page - 1) * $perPage;
+            $slicedData = $allData->slice($offset, $perPage)->values();
+
+            $leaderboardPaginated = new LengthAwarePaginator(
+                $slicedData,
+                $allData->count(),
+                $perPage,
+                $page,
+                ['path' => route('leaderboard.pcl.page')]
+            );
+        } else {
+            $leaderboardPaginated = new LengthAwarePaginator([], 0, $perPage, $page, ['path' => route('leaderboard.pcl.page')]);
+        }
+
+        return response()->json([
+            'html' => view('components.partials.leaderboard-table-rows', [
+                'leaderboardPaginated' => $leaderboardPaginated,
+                'allDataCount' => $leaderboardPaginated->total(),
+            ])->render(),
+            'pagination' => view('components.partials.leaderboard-pagination', [
+                'leaderboardPaginated' => $leaderboardPaginated,
+            ])->render(),
+            'total' => $leaderboardPaginated->total(),
         ]);
     }
 }
