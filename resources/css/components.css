@@ -4410,7 +4410,6 @@ ul, ol {
     margin-top: 64px;
     margin-bottom: 64px;
     background-color: transparent;
-    padding-top: 80px;
 }
 
 .pcl-section__header {
@@ -5470,7 +5469,7 @@ ul, ol {
    ----------------------------------------- */
 .leaderboard-pcl {
     background-color: transparent;
-    padding: 72px var(--spacing-xxl) 30px var(--spacing-xxl);
+    padding: 120px var(--spacing-xxl) 30px var(--spacing-xxl);
     position: relative;
     z-index: 1;
 }

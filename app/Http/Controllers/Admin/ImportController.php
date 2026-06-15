@@ -413,14 +413,14 @@ class ImportController extends Controller
     }
 
     /**
-     * Generate kecamatan progress from PCL data.
+     * Generate kecamatan progress from the latest PCL data (highest import_id).
      */
     private function generateKecamatanProgress(string $dataDate): void
     {
-        // Get or create import record for kecamatan progress
+        // Get the latest import record for PCL data
         $import = MonitoringImport::where('type', 'data_pcl')
             ->where('status', 'completed')
-            ->orderByDesc('imported_at')
+            ->orderByDesc('id')
             ->first();
 
         if (! $import) {
@@ -430,8 +430,9 @@ class ImportController extends Controller
         // Delete old kecamatan progress for this date
         KecamatanProgress::where('data_date', $dataDate)->delete();
 
-        // Aggregate PCL data by kecamatan
+        // Aggregate only the latest imported PCL data (by highest import_id) by kecamatan
         $kecamatanData = PclProgress::where('data_date', $dataDate)
+            ->where('import_id', $import->id)
             ->selectRaw('kecamatan, SUM(open) as open, SUM(draft) as draft, SUM(submit) as submit, SUM(approve) as approve, SUM(reject) as reject, SUM(completed) as completed')
             ->groupBy('kecamatan')
             ->get();
@@ -496,38 +497,45 @@ class ImportController extends Controller
      */
     private function calculateDailySubmits(string $dataDate): void
     {
-        // Get the latest import before this date (for comparison)
-        $previousImport = MonitoringImport::where('type', 'data_pcl')
+        // Get the latest import (highest id) for PCL data
+        $latestImport = MonitoringImport::where('type', 'data_pcl')
             ->where('status', 'completed')
-            ->where('imported_at', '<', function ($query) use ($dataDate) {
-                $query->select(DB::raw('MAX(imported_at)'))
-                    ->from('monitoring_imports')
-                    ->where('type', 'data_pcl')
-                    ->where('status', 'completed')
-                    ->where('imported_at', '<', $dataDate);
-            })
-            ->orderByDesc('imported_at')
+            ->orderByDesc('id')
             ->first();
 
-        // Get current aggregated data by email
+        if (! $latestImport) {
+            return;
+        }
+
+        // Get the immediately previous import (highest id less than latest)
+        $previousImport = MonitoringImport::where('type', 'data_pcl')
+            ->where('status', 'completed')
+            ->where('id', '<', $latestImport->id)
+            ->orderByDesc('id')
+            ->first();
+
+        // Get current aggregated data by email from the latest import only
         $currentData = PclProgress::where('data_date', $dataDate)
+            ->where('import_id', $latestImport->id)
             ->selectRaw('email, name, SUM(submit) as submit')
             ->groupBy('email', 'name')
             ->get()
             ->keyBy('email');
 
-        // Get previous aggregated data by email (if exists)
+        // Get previous aggregated data by email from the immediately previous import only
         $previousData = collect();
         if ($previousImport) {
-            $previousData = PclProgress::where('import_id', $previousImport->id)
+            $previousData = PclProgress::where('data_date', $dataDate)
+                ->where('import_id', $previousImport->id)
                 ->selectRaw('email, name, SUM(submit) as submit')
                 ->groupBy('email', 'name')
                 ->get()
                 ->keyBy('email');
         }
 
-        // Get kecamatans for each email from current data
+        // Get kecamatans for each email from the latest import only
         $kecamatanByEmail = PclProgress::where('data_date', $dataDate)
+            ->where('import_id', $latestImport->id)
             ->select('email', 'kecamatan')
             ->get()
             ->groupBy('email')
@@ -571,30 +579,36 @@ class ImportController extends Controller
             ->pluck('count', 'pml_email')
             ->toArray();
 
-        // Get the latest import before this date (for comparison)
-        $previousImport = MonitoringImport::where('type', 'data_pml')
+        // Get the latest import (highest id) for PML data
+        $latestImport = MonitoringImport::where('type', 'data_pml')
             ->where('status', 'completed')
-            ->where('imported_at', '<', function ($query) use ($dataDate) {
-                $query->select(DB::raw('MAX(imported_at)'))
-                    ->from('monitoring_imports')
-                    ->where('type', 'data_pml')
-                    ->where('status', 'completed')
-                    ->where('imported_at', '<', $dataDate);
-            })
-            ->orderByDesc('imported_at')
+            ->orderByDesc('id')
             ->first();
 
-        // Get current aggregated data by email
+        if (! $latestImport) {
+            return;
+        }
+
+        // Get the immediately previous import (highest id less than latest)
+        $previousImport = MonitoringImport::where('type', 'data_pml')
+            ->where('status', 'completed')
+            ->where('id', '<', $latestImport->id)
+            ->orderByDesc('id')
+            ->first();
+
+        // Get current aggregated data by email from the latest import only
         $currentData = PmlProgress::where('data_date', $dataDate)
+            ->where('import_id', $latestImport->id)
             ->selectRaw('email, name, SUM(reject) as reject, SUM(approve) as approve')
             ->groupBy('email', 'name')
             ->get()
             ->keyBy('email');
 
-        // Get previous aggregated data by email (if exists)
+        // Get previous aggregated data by email from the immediately previous import only
         $previousData = collect();
         if ($previousImport) {
-            $previousData = PmlProgress::where('import_id', $previousImport->id)
+            $previousData = PmlProgress::where('data_date', $dataDate)
+                ->where('import_id', $previousImport->id)
                 ->selectRaw('email, name, SUM(reject) as reject, SUM(approve) as approve')
                 ->groupBy('email', 'name')
                 ->get()

@@ -19,12 +19,19 @@ class MonitoringController extends Controller
 {
     public function index()
     {
+        // Get latest import_id for filtering
+        $latestPmlImportId = PmlProgress::max('import_id');
+        $latestPclImportId = PclProgress::max('import_id');
+        $latestKecamatanImportId = KecamatanProgress::max('import_id');
+
         // Get latest data from database for kecamatan progress
-        $kecamatanProgress = KecamatanProgress::selectRaw('
-            kecamatan,
-            SUM(total_assignment) as total_assignment,
-            SUM(submit) as submit
-        ')->groupBy('kecamatan')->get();
+        // Filter by latest import_id to avoid double counting from cumulative data
+        $kecamatanProgress = KecamatanProgress::where('import_id', $latestKecamatanImportId)
+            ->selectRaw('
+                kecamatan,
+                SUM(total_assignment) as total_assignment,
+                SUM(submit) as submit
+            ')->groupBy('kecamatan')->get();
 
         // Format progress data for each kecamatan
         $progressData = [];
@@ -45,12 +52,14 @@ class MonitoringController extends Controller
         $overallProgress = $totalTarget > 0 ? round(($totalCompleted / $totalTarget) * 100, 1) : 0;
 
         // PML (Petugas Pemeriksa Lapangan) progress data from database
-        $pmlProgressData = PmlProgress::selectRaw('
-            email,
-            SUM(submit) as submit,
-            SUM(reject) as reject,
-            SUM(approve) as approved
-        ')->groupBy('email')->get();
+        // Filter by latest import_id to avoid double counting from cumulative data
+        $pmlProgressData = PmlProgress::where('import_id', $latestPmlImportId)
+            ->selectRaw('
+                email,
+                SUM(submit) as submit,
+                SUM(reject) as reject,
+                SUM(approve) as approved
+            ')->groupBy('email')->get();
 
         // Get PML total assignments
         $pmlTotalAssignments = PmlTotalAssignment::pluck('total_assignment', 'email');
@@ -86,13 +95,15 @@ class MonitoringController extends Controller
 
         // PCL (Petugas Pencacah Lapangan) progress data from database
         // Group by email to get aggregated progress for each PCL
-        $pclProgressData = PclProgress::selectRaw('
-            email,
-            SUM(open) as open,
-            SUM(submit) as submit,
-            SUM(reject) as reject,
-            SUM(completed) as completed
-        ')->groupBy('email')->get();
+        // Filter by latest import_id to avoid double counting from cumulative data
+        $pclProgressData = PclProgress::where('import_id', $latestPclImportId)
+            ->selectRaw('
+                email,
+                SUM(open) as open,
+                SUM(submit) as submit,
+                SUM(reject) as reject,
+                SUM(completed) as completed
+            ')->groupBy('email')->get();
 
         // Get PCL total assignments
         $pclTotalAssignments = PclTotalAssignment::pluck('total_assignment', 'email');
@@ -258,13 +269,16 @@ class MonitoringController extends Controller
         $sortDirection = $request->get('sortDirection', 'asc');
 
         // PCL progress data from database
-        $pclProgressData = PclProgress::selectRaw('
-            email,
-            SUM(open) as open,
-            SUM(submit) as submit,
-            SUM(reject) as reject,
-            SUM(completed) as completed
-        ')->groupBy('email')->get();
+        // Filter by latest import_id to avoid double counting from cumulative data
+        $latestPclImportId = PclProgress::max('import_id');
+        $pclProgressData = PclProgress::where('import_id', $latestPclImportId)
+            ->selectRaw('
+                email,
+                SUM(open) as open,
+                SUM(submit) as submit,
+                SUM(reject) as reject,
+                SUM(completed) as completed
+            ')->groupBy('email')->get();
 
         // Get PCL total assignments
         $pclTotalAssignments = PclTotalAssignment::pluck('total_assignment', 'email');
