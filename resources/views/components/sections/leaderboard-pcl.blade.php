@@ -151,6 +151,11 @@
             <h3 class="leaderboard-pcl__table-title">Klasemen Lengkap</h3>
             <div class="leaderboard-pcl__table-meta">
                 <span class="leaderboard-pcl__table-count">{{ $leaderboardDataPaginated->total() }} PCL</span>
+                @if($lastUpdate)
+                    <span class="leaderboard-pcl__table-last-update">
+                        Kondisi {{ $lastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
+                    </span>
+                @endif
             </div>
         </div>
 

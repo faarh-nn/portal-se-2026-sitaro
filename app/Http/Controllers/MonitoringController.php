@@ -162,6 +162,11 @@ class MonitoringController extends Controller
 
         // Get latest leaderboard data from pcl_daily_submits
         $latestDataDate = PclDailySubmit::orderByDesc('data_date')->value('data_date');
+        $leaderboardLastUpdate = $latestDataDate ? MonitoringImport::where('type', 'data_pcl')
+            ->where('status', 'completed')
+            ->whereDate('imported_at', '<=', $latestDataDate)
+            ->orderBy('imported_at', 'desc')
+            ->first() : null;
 
         if ($latestDataDate) {
             $leaderboardQuery = PclDailySubmit::where('data_date', $latestDataDate)
@@ -199,6 +204,11 @@ class MonitoringController extends Controller
 
         // Get latest PML leaderboard data from pml_daily_submits
         $latestPmlDataDate = PmlDailySubmit::orderByDesc('data_date')->value('data_date');
+        $pmlLeaderboardLastUpdate = $latestPmlDataDate ? MonitoringImport::where('type', 'data_pml')
+            ->where('status', 'completed')
+            ->whereDate('imported_at', '<=', $latestPmlDataDate)
+            ->orderBy('imported_at', 'desc')
+            ->first() : null;
 
         if ($latestPmlDataDate) {
             $pmlLeaderboardQuery = PmlDailySubmit::where('data_date', $latestPmlDataDate)
@@ -255,8 +265,10 @@ class MonitoringController extends Controller
             'lastUpdate',
             'leaderboardData',
             'leaderboardDataPaginated',
+            'leaderboardLastUpdate',
             'pmlLeaderboardData',
             'pmlLeaderboardDataPaginated',
+            'pmlLeaderboardLastUpdate',
         ));
     }
 

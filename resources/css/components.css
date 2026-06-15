@@ -5801,6 +5801,16 @@ ul, ol {
     color: var(--color-ink-mute);
 }
 
+.leaderboard-pcl__table-last-update {
+    font-size: 12px;
+    color: #F59E0B;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: var(--rounded-pill);
+    background-color: rgba(245, 158, 11, 0.12);
+    border: 1.5px solid #F59E0B;
+}
+
 .leaderboard-pcl__table-wrapper {
     overflow-x: auto;
 }
@@ -6429,6 +6439,16 @@ ul, ol {
 .leaderboard-pml__table-count {
     font-size: 14px;
     color: var(--color-ink-mute);
+}
+
+.leaderboard-pml__table-last-update {
+    font-size: 12px;
+    color: #8B5CF6;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: var(--rounded-pill);
+    background-color: rgba(139, 92, 246, 0.12);
+    border: 1.5px solid #8B5CF6;
 }
 
 .leaderboard-pml__table-wrapper {
