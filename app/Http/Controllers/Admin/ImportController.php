@@ -8,8 +8,10 @@ use App\Models\KecamatanProgress;
 use App\Models\MonitoringImport;
 use App\Models\OfficerMapping;
 use App\Models\PclDailySubmit;
+use App\Models\PclPml;
 use App\Models\PclProgress;
 use App\Models\PclTotalAssignment;
+use App\Models\PmlDailySubmit;
 use App\Models\PmlProgress;
 use App\Models\PmlTotalAssignment;
 use Illuminate\Http\Request;
@@ -196,6 +198,9 @@ class ImportController extends Controller
                 $count = $this->processPmlData($request->file('file_pml'), $pmlImport, $dataDate);
                 $pmlImport->markCompleted($count);
                 $totalRows += $count;
+
+                // Calculate and store daily submits for PML leaderboard
+                $this->calculatePmlDailySubmits($dataDate);
             }
 
             // Import PCL data
@@ -476,6 +481,7 @@ class ImportController extends Controller
         OfficerMapping::truncate();
         KecamatanMapping::truncate();
         PclDailySubmit::truncate();
+        PmlDailySubmit::truncate();
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
@@ -545,6 +551,81 @@ class ImportController extends Controller
                     'kecamatan' => $kecamatans,
                     'daily_submit' => $dailySubmit,
                     'total_submit' => $currentSubmit,
+                    'target_met' => $targetMet,
+                ]
+            );
+        }
+    }
+
+    /**
+     * Calculate and store daily reject+approve values for PML leaderboard.
+     *
+     * Target threshold = 0.5 * 10 * pcl_count = 5 * pcl_count
+     * PML meets target if daily_reject + daily_approve >= threshold
+     */
+    private function calculatePmlDailySubmits(string $dataDate): void
+    {
+        // Get PCL count for each PML from pcl_pml mapping
+        $pclCounts = PclPml::select('pml_email', DB::raw('COUNT(*) as count'))
+            ->groupBy('pml_email')
+            ->pluck('count', 'pml_email')
+            ->toArray();
+
+        // Get the latest import before this date (for comparison)
+        $previousImport = MonitoringImport::where('type', 'data_pml')
+            ->where('status', 'completed')
+            ->where('imported_at', '<', function ($query) use ($dataDate) {
+                $query->select(DB::raw('MAX(imported_at)'))
+                    ->from('monitoring_imports')
+                    ->where('type', 'data_pml')
+                    ->where('status', 'completed')
+                    ->where('imported_at', '<', $dataDate);
+            })
+            ->orderByDesc('imported_at')
+            ->first();
+
+        // Get current aggregated data by email
+        $currentData = PmlProgress::where('data_date', $dataDate)
+            ->selectRaw('email, name, SUM(reject) as reject, SUM(approve) as approve')
+            ->groupBy('email', 'name')
+            ->get()
+            ->keyBy('email');
+
+        // Get previous aggregated data by email (if exists)
+        $previousData = collect();
+        if ($previousImport) {
+            $previousData = PmlProgress::where('import_id', $previousImport->id)
+                ->selectRaw('email, name, SUM(reject) as reject, SUM(approve) as approve')
+                ->groupBy('email', 'name')
+                ->get()
+                ->keyBy('email');
+        }
+
+        // Process each PML
+        foreach ($currentData as $email => $data) {
+            $currentReject = $data->reject ?? 0;
+            $currentApprove = $data->approve ?? 0;
+            $previousReject = $previousData->get($email)?->reject ?? 0;
+            $previousApprove = $previousData->get($email)?->approve ?? 0;
+
+            $dailyReject = max(0, $currentReject - $previousReject);
+            $dailyApprove = max(0, $currentApprove - $previousApprove);
+            $dailyCombined = $dailyReject + $dailyApprove;
+
+            $pclCount = $pclCounts[$email] ?? 0;
+            $targetThreshold = 5 * $pclCount;
+            $targetMet = $pclCount > 0 && $dailyCombined >= $targetThreshold;
+
+            PmlDailySubmit::updateOrCreate(
+                ['email' => $email, 'data_date' => $dataDate],
+                [
+                    'name' => $data->name,
+                    'daily_reject' => $dailyReject,
+                    'daily_approve' => $dailyApprove,
+                    'daily_combined' => $dailyCombined,
+                    'total_reject' => $currentReject,
+                    'total_approve' => $currentApprove,
+                    'pcl_count' => $pclCount,
                     'target_met' => $targetMet,
                 ]
             );

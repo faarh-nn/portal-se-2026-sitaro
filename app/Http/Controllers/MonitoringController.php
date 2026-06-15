@@ -9,6 +9,7 @@ use App\Models\PclDailySubmit;
 use App\Models\PclPml;
 use App\Models\PclProgress;
 use App\Models\PclTotalAssignment;
+use App\Models\PmlDailySubmit;
 use App\Models\PmlProgress;
 use App\Models\PmlTotalAssignment;
 use Illuminate\Http\Request;
@@ -185,6 +186,45 @@ class MonitoringController extends Controller
             $leaderboardDataPaginated = new LengthAwarePaginator([], 0, 5, 1, ['path' => route('monitoring')]);
         }
 
+        // Get latest PML leaderboard data from pml_daily_submits
+        $latestPmlDataDate = PmlDailySubmit::orderByDesc('data_date')->value('data_date');
+
+        if ($latestPmlDataDate) {
+            $pmlLeaderboardQuery = PmlDailySubmit::where('data_date', $latestPmlDataDate)
+                ->orderByDesc('daily_combined')
+                ->orderBy('name');
+
+            $pmlLeaderboardData = $pmlLeaderboardQuery->get()->map(function ($item) {
+                return [
+                    'name' => $item->name ?? $item->email,
+                    'email' => $item->email,
+                    'daily_reject' => $item->daily_reject,
+                    'daily_approve' => $item->daily_approve,
+                    'daily_combined' => $item->daily_combined,
+                    'pcl_count' => $item->pcl_count,
+                    'target_met' => $item->target_met,
+                    'target_threshold' => 5 * $item->pcl_count,
+                ];
+            });
+
+            // Paginate PML leaderboard data (5 per page)
+            $pmlLeaderboardPerPage = 5;
+            $pmlLeaderboardPage = (int) request()->get('pml_leaderboard_page', 1);
+            $pmlLeaderboardOffset = ($pmlLeaderboardPage - 1) * $pmlLeaderboardPerPage;
+            $pmlLeaderboardSliced = $pmlLeaderboardData->slice($pmlLeaderboardOffset, $pmlLeaderboardPerPage)->values();
+
+            $pmlLeaderboardDataPaginated = new LengthAwarePaginator(
+                $pmlLeaderboardSliced,
+                $pmlLeaderboardData->count(),
+                $pmlLeaderboardPerPage,
+                $pmlLeaderboardPage,
+                ['path' => route('monitoring', ['tab' => 'pml_leaderboard'])]
+            );
+        } else {
+            $pmlLeaderboardData = collect();
+            $pmlLeaderboardDataPaginated = new LengthAwarePaginator([], 0, 5, 1, ['path' => route('monitoring')]);
+        }
+
         // Get last update timestamp from completed imports
         $lastUpdate = MonitoringImport::where('status', 'completed')
             ->orderBy('imported_at', 'desc')
@@ -204,6 +244,8 @@ class MonitoringController extends Controller
             'lastUpdate',
             'leaderboardData',
             'leaderboardDataPaginated',
+            'pmlLeaderboardData',
+            'pmlLeaderboardDataPaginated',
         ));
     }
 
@@ -359,6 +401,59 @@ class MonitoringController extends Controller
                 'leaderboardPaginated' => $leaderboardPaginated,
             ])->render(),
             'total' => $leaderboardPaginated->total(),
+        ]);
+    }
+
+    public function getPmlLeaderboardPage(Request $request)
+    {
+        $page = (int) $request->get('page', 1);
+        $perPage = 5;
+
+        // Get latest PML leaderboard data
+        $latestDataDate = PmlDailySubmit::orderByDesc('data_date')->value('data_date');
+
+        $pmlLeaderboardData = collect();
+
+        if ($latestDataDate) {
+            $pmlLeaderboardQuery = PmlDailySubmit::where('data_date', $latestDataDate)
+                ->orderByDesc('daily_combined')
+                ->orderBy('name');
+
+            $allData = $pmlLeaderboardQuery->get()->map(function ($item) {
+                return [
+                    'name' => $item->name ?? $item->email,
+                    'email' => $item->email,
+                    'daily_reject' => $item->daily_reject,
+                    'daily_approve' => $item->daily_approve,
+                    'daily_combined' => $item->daily_combined,
+                    'pcl_count' => $item->pcl_count,
+                    'target_met' => $item->target_met,
+                    'target_threshold' => 5 * $item->pcl_count,
+                ];
+            });
+
+            $offset = ($page - 1) * $perPage;
+            $slicedData = $allData->slice($offset, $perPage)->values();
+
+            $pmlLeaderboardPaginated = new LengthAwarePaginator(
+                $slicedData,
+                $allData->count(),
+                $perPage,
+                $page,
+                ['path' => route('pml.leaderboard.page')]
+            );
+        } else {
+            $pmlLeaderboardPaginated = new LengthAwarePaginator([], 0, $perPage, $page, ['path' => route('pml.leaderboard.page')]);
+        }
+
+        return response()->json([
+            'html' => view('components.partials.pml-leaderboard-table-rows', [
+                'pmlLeaderboardPaginated' => $pmlLeaderboardPaginated,
+            ])->render(),
+            'pagination' => view('components.partials.pml-leaderboard-pagination', [
+                'pmlLeaderboardPaginated' => $pmlLeaderboardPaginated,
+            ])->render(),
+            'total' => $pmlLeaderboardPaginated->total(),
         ]);
     }
 }

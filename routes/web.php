@@ -13,6 +13,7 @@ Route::get('/table-page', [HomeController::class, 'getTablePage'])->name('table.
 Route::get('/pcl-table-page', [MonitoringController::class, 'getPclTablePage'])->name('pcl.table.page');
 Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring');
 Route::get('/leaderboard-pcl-page', [MonitoringController::class, 'getLeaderboardPage'])->name('leaderboard.pcl.page');
+Route::get('/pml-leaderboard-page', [MonitoringController::class, 'getPmlLeaderboardPage'])->name('pml.leaderboard.page');
 
 // Auth routes
 Route::middleware('guest')->group(function () {
