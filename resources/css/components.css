@@ -5469,9 +5469,10 @@ ul, ol {
    ----------------------------------------- */
 .leaderboard-pcl {
     background-color: transparent;
-    padding: 120px var(--spacing-xxl) 30px var(--spacing-xxl);
+    padding: 60px var(--spacing-xxl) 30px var(--spacing-xxl);
     position: relative;
     z-index: 1;
+    padding-top: 120px;
 }
 
 .leaderboard-pcl__header {
@@ -6858,5 +6859,97 @@ ul, ol {
     .leaderboard-pml__table td {
         padding: 10px 12px;
         font-size: 12px;
+    }
+}
+
+/* ==========================================
+   Monitoring Sub-Navigation Bar (Vertical)
+   ========================================== */
+.monitoring-subnav {
+    position: fixed;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    z-index: 998;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-deep) 100%);
+    padding: 12px 8px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(247, 144, 57, 0.3);
+}
+
+.monitoring-subnav__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.monitoring-subnav__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    position: relative;
+}
+
+.monitoring-subnav__item:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+}
+
+.monitoring-subnav__item.active {
+    background-color: white;
+    color: var(--color-primary-deep);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.monitoring-subnav__icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.monitoring-subnav__item span {
+    display: none;
+}
+
+/* Tooltip on hover */
+.monitoring-subnav__item::after {
+    content: attr(data-label);
+    position: absolute;
+    right: 56px;
+    background-color: var(--color-ink);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    pointer-events: none;
+}
+
+.monitoring-subnav__item:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Hide on mobile and tablet */
+@media (max-width: 1024px) {
+    .monitoring-subnav {
+        display: none;
+    }
+
+    .monitoring-section__container {
+        padding-top: 0;
     }
 }

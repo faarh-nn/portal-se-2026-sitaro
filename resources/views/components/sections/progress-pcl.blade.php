@@ -1,4 +1,4 @@
-<div class="pcl-section" x-data="pclTable()">
+<div class="pcl-section" x-data="pclTable()" id="progress-pcl">
     <div class="pcl-section__header">
         <span class="pcl-section__eyebrow">Monitoring PCL</span>
         <h2 class="pcl-section__title">Progress per PCL (Petugas Pencacah Lapangan)</h2>

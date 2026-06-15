@@ -1,4 +1,4 @@
-<div class="monitoring-kecamatan-table-section">
+<div class="monitoring-kecamatan-table-section" id="tabel-kecamatan">
     <div class="monitoring-kecamatan-table-header">
         <h3 class="monitoring-kecamatan-table-section__title">Detail Progress per Kecamatan</h3>
         @if($lastUpdate)

@@ -1,4 +1,4 @@
-<section class="monitoring-section">
+<section class="monitoring-section" id="peta-kecamatan">
     <div class="monitoring-section__header">
         <span class="monitoring-section__eyebrow">Monitoring Kecamatan</span>
         <h2 class="monitoring-section__title">Progress Pencacahan per Kecamatan</h2>

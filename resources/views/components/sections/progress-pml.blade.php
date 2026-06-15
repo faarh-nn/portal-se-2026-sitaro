@@ -1,4 +1,4 @@
-<div class="pml-section" x-data="pmlTable()">
+<div class="pml-section" x-data="pmlTable()" id="progress-pml">
     <div class="pml-section__header">
         <span class="pml-section__eyebrow">Monitoring PML</span>
         <h2 class="pml-section__title">Progress per PML (Petugas Pemeriksa Lapangan)</h2>

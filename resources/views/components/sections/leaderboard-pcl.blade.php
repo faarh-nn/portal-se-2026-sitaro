@@ -1,4 +1,4 @@
-<div class="leaderboard-pcl" x-data="leaderboardPcl()">
+<div class="leaderboard-pcl" x-data="leaderboardPcl()" id="leaderboard-pcl">
     <div class="leaderboard-pcl__header">
         <span class="leaderboard-pcl__eyebrow">Leaderboard Harian</span>
         <h2 class="leaderboard-pcl__title">Leaderboard Pencacah Lapangan (PCL)</h2>

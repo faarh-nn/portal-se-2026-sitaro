@@ -7,6 +7,28 @@ window.Alpine = Alpine;
 Alpine.plugin(collapse);
 Alpine.plugin(intersect);
 
+// Monitoring subnav scroll spy store
+Alpine.store('monitoring', {
+    activeSection: '',
+    init() {
+        const sections = ['leaderboard-pcl', 'leaderboard-pml', 'progress-pcl', 'progress-pml', 'peta-kecamatan', 'tabel-kecamatan'];
+        const updateActiveSection = () => {
+            const scrollPosition = window.scrollY + 200;
+
+            for (let i = sections.length - 1; i >= 0; i--) {
+                const section = document.getElementById(sections[i]);
+                if (section && section.offsetTop <= scrollPosition) {
+                    this.activeSection = sections[i];
+                    break;
+                }
+            }
+        };
+
+        window.addEventListener('scroll', updateActiveSection);
+        updateActiveSection();
+    }
+});
+
 // Navbar scroll behavior
 document.addEventListener('DOMContentLoaded', () => {
     const navbar = document.getElementById('navbar');

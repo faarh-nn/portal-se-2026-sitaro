@@ -1,4 +1,4 @@
-<div class="leaderboard-pml" x-data="leaderboardPml()">
+<div class="leaderboard-pml" x-data="leaderboardPml()" id="leaderboard-pml">
     <div class="leaderboard-pml__header">
         <span class="leaderboard-pml__eyebrow">Leaderboard Harian</span>
         <h2 class="leaderboard-pml__title">Leaderboard Petugas Pemeriksa Lapangan (PML)</h2>
