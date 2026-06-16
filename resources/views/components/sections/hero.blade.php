@@ -16,7 +16,7 @@
                 </p>
 
                 <div class="hero__actions">
-                    <button class="btn-primary-pill btn-primary-pill--lg shadow-sm">Mulai Sekarang</button>
+                    <a href="#statistik-usaha" class="btn-primary-pill btn-primary-pill--lg shadow-sm">Mulai Sekarang</a>
                 </div>
             </div>
 

@@ -250,17 +250,22 @@ ul, ol {
     letter-spacing: 0.2px;
     padding: 14px 28px;
     border-radius: var(--rounded-pill);
-    transition: background-color 0.2s ease, transform 0.1s ease;
+    transition: background-color 0.2s ease, transform 0.25s ease, box-shadow 0.25s ease;
     display: inline-block;
     text-align: center;
+    border: 1px solid transparent;
 }
 
 .btn-primary-pill:hover {
     background-color: var(--color-primary-deep);
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.4);
+    border-color: rgba(254, 189, 38, 0.3);
 }
 
 .btn-primary-pill:active {
     background-color: var(--color-primary-press);
+    transform: translateY(-2px) scale(1.005);
 }
 
 .btn-primary-pill--lg {
@@ -1203,7 +1208,16 @@ ul, ol {
     border-radius: var(--rounded-lg);
     padding: var(--spacing-sm);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid transparent;
     animation: heroCardFloat 3s ease-in-out infinite;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.hero__card:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
+    background-color: rgba(255, 255, 255, 0.95);
 }
 
 @keyframes heroCardFloat {
@@ -1721,6 +1735,14 @@ ul, ol {
     padding: 24px 32px;
     border-radius: var(--rounded-xl);
     box-shadow: 0 8px 32px rgba(247, 144, 57, 0.3);
+    border: 1px solid transparent;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.stats-total-card:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.4);
+    border-color: rgba(254, 189, 38, 0.3);
 }
 
 .stats-total-card__icon {
@@ -1769,6 +1791,15 @@ ul, ol {
     background-color: var(--color-surface-elev);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
     text-align: center;
+    border: 1px solid transparent;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.stats-scale-card:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
+    background-color: rgba(255, 255, 255, 0.95);
 }
 
 .stats-scale-card__value-wrapper {
@@ -2007,7 +2038,12 @@ ul, ol {
 }
 
 .stats-table tbody tr:hover {
-    background-color: var(--color-canvas);
+    background-color: rgba(247, 144, 57, 0.08);
+    box-shadow: 0 0 8px rgba(247, 144, 57, 0.15);
+}
+
+.stats-table tbody tr {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 @media (max-width: 767px) {
@@ -2107,6 +2143,15 @@ ul, ol {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    border: 1px solid transparent;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.gmaps-stat-card:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
+    background-color: rgba(255, 255, 255, 0.95);
 }
 
 .gmaps-stat-card__icon {
@@ -2411,7 +2456,12 @@ ul, ol {
 }
 
 .gmaps-table tbody tr:hover {
-    background-color: var(--color-canvas);
+    background-color: rgba(247, 144, 57, 0.08);
+    box-shadow: 0 0 8px rgba(247, 144, 57, 0.15);
+}
+
+.gmaps-table tbody tr {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 @media (max-width: 767px) {
@@ -2621,6 +2671,14 @@ ul, ol {
     gap: 20px;
     margin-bottom: 24px;
     box-shadow: 0 8px 32px rgba(247, 144, 57, 0.2);
+    border: 1px solid transparent;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.se-tujuan-card:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.4);
+    border-color: rgba(254, 189, 38, 0.3);
 }
 
 .se-tujuan-card__icon {
@@ -2665,6 +2723,17 @@ ul, ol {
     display: flex;
     align-items: center;
     gap: 16px;
+    padding: 8px 12px;
+    border-radius: var(--rounded-md);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+    border: 1px solid transparent;
+}
+
+.se-tujuan-list__item:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
+    background-color: rgba(255, 255, 255, 0.9);
 }
 
 .se-tujuan-list__number {
@@ -2842,14 +2911,17 @@ ul, ol {
     background-color: var(--color-surface-elev);
     border-radius: var(--rounded-lg);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
     flex-shrink: 0;
     width: fit-content;
 }
 
 .kbli-category-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
+    background-color: rgba(255, 255, 255, 0.95);
 }
 
 .kbli-category-card__icon {
@@ -3035,7 +3107,17 @@ ul, ol {
     align-items: center;
     text-align: center;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+    border: 1px solid transparent;
+    border-radius: var(--rounded-lg);
+    padding: 16px;
+}
+
+.timeline-phase:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
+    background-color: rgba(255, 255, 255, 0.9);
 }
 
 @media (max-width: 767px) {
@@ -3309,6 +3391,14 @@ ul, ol {
     padding: 32px 48px;
     text-align: center;
     box-shadow: 0 8px 32px rgba(247, 144, 57, 0.3);
+    border: 1px solid transparent;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.petugas-stats__card:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.4);
+    border-color: rgba(254, 189, 38, 0.3);
 }
 
 .petugas-stats__number {
@@ -3636,6 +3726,15 @@ ul, ol {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    border: 1px solid transparent;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.monitoring-stat-card:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
+    background-color: rgba(255, 255, 255, 0.95);
 }
 
 .monitoring-stat-card__icon {
@@ -3883,7 +3982,12 @@ ul, ol {
 }
 
 .monitoring-kecamatan-table tbody tr:hover {
-    background-color: var(--color-canvas);
+    background-color: rgba(247, 144, 57, 0.08);
+    box-shadow: 0 0 8px rgba(247, 144, 57, 0.15);
+}
+
+.monitoring-kecamatan-table tbody tr {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .monitoring-kecamatan-table__kecamatan {
@@ -4046,6 +4150,14 @@ ul, ol {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--color-hairline);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.pml-stat-card:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
+    background-color: rgba(255, 255, 255, 0.95);
 }
 
 .pml-stat-card__icon {
@@ -4288,7 +4400,12 @@ ul, ol {
 }
 
 .pml-table tbody tr:hover {
-    background-color: var(--color-canvas);
+    background-color: rgba(247, 144, 57, 0.08);
+    box-shadow: 0 0 8px rgba(247, 144, 57, 0.15);
+}
+
+.pml-table tbody tr {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .pml-table__no {
@@ -4482,6 +4599,14 @@ ul, ol {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--color-hairline);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.pcl-stat-card:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
+    background-color: rgba(255, 255, 255, 0.95);
 }
 
 .pcl-stat-card__icon {
@@ -4764,7 +4889,12 @@ ul, ol {
 }
 
 .pcl-table tbody tr:hover {
-    background-color: var(--color-canvas);
+    background-color: rgba(247, 144, 57, 0.08);
+    box-shadow: 0 0 8px rgba(247, 144, 57, 0.15);
+}
+
+.pcl-table tbody tr {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .pcl-table__no {
@@ -5528,12 +5658,14 @@ ul, ol {
     border-radius: var(--rounded-xl);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     position: relative;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid transparent;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .leaderboard-pcl__podium-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
 }
 
 .leaderboard-pcl__podium-card--rank1 {
@@ -5746,12 +5878,13 @@ ul, ol {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--color-hairline);
     min-width: 200px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .leaderboard-pcl__runner-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
 }
 
 .leaderboard-pcl__runner-info {
@@ -5854,7 +5987,12 @@ ul, ol {
 }
 
 .leaderboard-pcl__table tbody tr:hover {
-    background-color: rgba(99, 102, 241, 0.05);
+    background-color: rgba(247, 144, 57, 0.08);
+    box-shadow: 0 0 8px rgba(247, 144, 57, 0.15);
+}
+
+.leaderboard-pcl__table tbody tr {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .leaderboard-pcl__row--met {
@@ -6148,12 +6286,14 @@ ul, ol {
     border-radius: var(--rounded-xl);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     position: relative;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid transparent;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .leaderboard-pml__podium-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
 }
 
 .leaderboard-pml__podium-card--rank1 {
@@ -6386,12 +6526,13 @@ ul, ol {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--color-hairline);
     min-width: 220px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .leaderboard-pml__runner-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 12px 32px rgba(247, 144, 57, 0.2);
+    border-color: rgba(254, 189, 38, 0.3);
 }
 
 .leaderboard-pml__runner-info {
@@ -6494,7 +6635,12 @@ ul, ol {
 }
 
 .leaderboard-pml__table tbody tr:hover {
-    background-color: rgba(139, 92, 246, 0.05);
+    background-color: rgba(247, 144, 57, 0.08);
+    box-shadow: 0 0 8px rgba(247, 144, 57, 0.15);
+}
+
+.leaderboard-pml__table tbody tr {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .leaderboard-pml__row--met {
