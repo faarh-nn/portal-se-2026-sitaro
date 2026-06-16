@@ -34,25 +34,25 @@
                     </div>
                     <div class="hero__stats-grid">
                         <div class="hero__stat-card">
-                            <div class="hero__stat-value">85%</div>
+                            <div class="hero__stat-value">{{ $overallProgress ?? 0 }}%</div>
                             <div class="hero__stat-label">Terealisasi</div>
                         </div>
                         <div class="hero__stat-card">
-                            <div class="hero__stat-value">12K</div>
-                            <div class="hero__stat-label">Usaha Terdata</div>
+                            <div class="hero__stat-value">{{ number_format($totalTarget ?? 0) }}</div>
+                            <div class="hero__stat-label">Target Pencacahan</div>
                         </div>
                         <div class="hero__stat-card">
-                            <div class="hero__stat-value">10</div>
-                            <div class="hero__stat-label">Kecamatan</div>
+                            <div class="hero__stat-value">{{ number_format($totalCompleted ?? 0) }}</div>
+                            <div class="hero__stat-label">Tercacah</div>
                         </div>
                     </div>
                     <div class="hero__progress-section">
                         <div class="hero__progress-header">
                             <span class="hero__progress-title">Target Pencacahan</span>
-                            <span class="hero__progress-value">85%</span>
+                            <span class="hero__progress-value">{{ $overallProgress ?? 0 }}%</span>
                         </div>
                         <div class="hero__progress-bar">
-                            <div class="hero__progress-fill" style="width: 85%"></div>
+                            <div class="hero__progress-fill" style="width: {{ $overallProgress ?? 0 }}%"></div>
                         </div>
                     </div>
                 </div>

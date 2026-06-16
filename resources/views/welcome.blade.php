@@ -1,6 +1,10 @@
 <x-layouts.app>
     <x-partials.navbar />
-    <x-sections.hero />
+    <x-sections.hero
+        :overallProgress="$overallProgress"
+        :totalTarget="$totalTarget"
+        :totalCompleted="$totalCompleted"
+    />
     <x-sections.statistics-usaha-sbr
         :totalUsaha="$totalUsaha"
         :statsBySkala="$statsBySkala"

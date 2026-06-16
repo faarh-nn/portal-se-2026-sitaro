@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Usaha;
 use App\Models\UsahaGmaps;
+use App\Models\KecamatanProgress;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -80,6 +81,12 @@ class HomeController extends Controller
             'luar_sbr' => UsahaGmaps::where('is_in_sbr', false)->count(),
         ];
 
+        // Data untuk hero section (dari monitoring)
+        $kecamatanProgress = KecamatanProgress::all();
+        $totalTarget = $kecamatanProgress->sum('total_assignment');
+        $totalCompleted = $kecamatanProgress->sum('submit');
+        $overallProgress = $totalTarget > 0 ? round(($totalCompleted / $totalTarget) * 100, 1) : 0;
+
         return view('welcome', compact(
             'totalUsaha',
             'statsBySkala',
@@ -88,7 +95,10 @@ class HomeController extends Controller
             'usahaGmaps',
             'statsGmaps',
             'allUsahaGmaps',
-            'kategoriOptions'
+            'kategoriOptions',
+            'totalTarget',
+            'totalCompleted',
+            'overallProgress'
         ));
     }
 
