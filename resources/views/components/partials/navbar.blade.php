@@ -70,8 +70,7 @@
                     </div>
                 </div>
             @else
-                <a href="{{ route('login') }}" class="btn-secondary-pill">Masuk</a>
-                <button class="btn-primary-pill">Daftar</button>
+                <a href="{{ route('login') }}" class="btn-primary-pill">Login Admin</a>
             @endauth
         </div>
 
@@ -116,7 +115,7 @@
                 </div>
             @endif
             @guest
-                <button class="btn-primary-pill navbar__mobile-daftar">Daftar</button>
+                <a href="{{ route('login') }}" class="btn-primary-pill navbar__mobile-btn">Login Admin</a>
             @endguest
             <button class="navbar__mobile-toggle" id="mobile-menu-btn" aria-label="Toggle menu">
                 <span class="hamburger">
@@ -144,8 +143,7 @@
                     <span>Logged in as {{ Auth::user()->name }}</span>
                 </div>
             @else
-                <a href="{{ route('login') }}" class="btn-secondary-pill navbar__mobile-btn">Masuk</a>
-                <button class="btn-primary-pill navbar__mobile-btn">Daftar</button>
+                <a href="{{ route('login') }}" class="btn-primary-pill navbar__mobile-btn">Login Admin</a>
             @endauth
         </div>
     </div>
