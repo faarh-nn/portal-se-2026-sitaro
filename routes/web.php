@@ -33,4 +33,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/import/officer', [ImportController::class, 'importOfficerMapping'])->name('import.officer');
     Route::post('/import/monitoring', [ImportController::class, 'importMonitoringData'])->name('import.monitoring');
     Route::post('/import/clear', [ImportController::class, 'clearData'])->name('import.clear');
+    Route::post('/import/clean-latest', [ImportController::class, 'cleanLatestImport'])->name('import.clean-latest');
 });

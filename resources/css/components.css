@@ -307,6 +307,37 @@ ul, ol {
     background-color: #f0e6ff;
 }
 
+/* Danger Pill Button */
+.btn-danger-pill {
+    background-color: #dc3545;
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.38;
+    letter-spacing: 0.2px;
+    padding: 8px 16px;
+    border-radius: var(--rounded-pill);
+    transition: background-color 0.2s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.btn-danger-pill:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+}
+
+.btn-danger-pill:active {
+    background-color: #bd2130;
+    transform: translateY(-1px);
+}
+
 /* Outline Button on Light Surface */
 .btn-outline-on-light {
     background-color: var(--color-canvas);

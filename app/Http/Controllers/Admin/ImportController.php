@@ -427,9 +427,6 @@ class ImportController extends Controller
             return;
         }
 
-        // Delete old kecamatan progress for this date
-        KecamatanProgress::where('data_date', $dataDate)->delete();
-
         // Aggregate only the latest imported PCL data (by highest import_id) by kecamatan
         $kecamatanData = PclProgress::where('data_date', $dataDate)
             ->where('import_id', $import->id)
@@ -461,6 +458,69 @@ class ImportController extends Controller
                 'import_id' => $import->id,
                 'data_date' => $dataDate,
             ]);
+        }
+    }
+
+    /**
+     * Clean the latest import data (2 most recent imports and their related data).
+     */
+    public function cleanLatestImport(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        // Get 2 latest import records
+        $latestImports = MonitoringImport::orderByDesc('id')->take(2)->pluck('id');
+
+        if ($latestImports->isEmpty()) {
+            return redirect()->back()->with('error', 'Tidak ada data import yang bisa dihapus.');
+        }
+
+        // Get latest data_date from the imports for daily submits cleanup
+        $latestDataDate = MonitoringImport::whereIn('id', $latestImports)->max('imported_at');
+        $dataDate = date('Y-m-d', strtotime($latestDataDate));
+
+        DB::beginTransaction();
+
+        try {
+            // 1. Delete kecamatan_progress with latest import_id
+            $latestImportId = MonitoringImport::where('type', 'data_pcl')
+                ->orderByDesc('id')
+                ->value('id');
+            if ($latestImportId) {
+                KecamatanProgress::where('import_id', $latestImportId)->delete();
+            }
+
+            // 2. Delete 2 latest monitoring_imports
+            MonitoringImport::whereIn('id', $latestImports)->delete();
+
+            // 3. Delete pcl_daily_submits with latest data_date
+            PclDailySubmit::where('data_date', $dataDate)->delete();
+
+            // 4. Delete pcl_progress with latest import_id
+            if ($latestImportId) {
+                PclProgress::where('import_id', $latestImportId)->delete();
+            }
+
+            // 5. Delete pml_daily_submits with latest data_date
+            PmlDailySubmit::where('data_date', $dataDate)->delete();
+
+            // 6. Delete pml_progress with latest import_id
+            $latestPmlImportId = MonitoringImport::where('type', 'data_pml')
+                ->orderByDesc('id')
+                ->value('id');
+            if ($latestPmlImportId) {
+                PmlProgress::where('import_id', $latestPmlImportId)->delete();
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Data import terbaru berhasil dibersihkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Gagal membersihkan data: '.$e->getMessage());
         }
     }
 
@@ -525,8 +585,7 @@ class ImportController extends Controller
         // Get previous aggregated data by email from the immediately previous import only
         $previousData = collect();
         if ($previousImport) {
-            $previousData = PclProgress::where('data_date', $dataDate)
-                ->where('import_id', $previousImport->id)
+            $previousData = PclProgress::where('import_id', $previousImport->id)
                 ->selectRaw('email, name, SUM(submit) as submit')
                 ->groupBy('email', 'name')
                 ->get()
@@ -607,8 +666,7 @@ class ImportController extends Controller
         // Get previous aggregated data by email from the immediately previous import only
         $previousData = collect();
         if ($previousImport) {
-            $previousData = PmlProgress::where('data_date', $dataDate)
-                ->where('import_id', $previousImport->id)
+            $previousData = PmlProgress::where('import_id', $previousImport->id)
                 ->selectRaw('email, name, SUM(reject) as reject, SUM(approve) as approve')
                 ->groupBy('email', 'name')
                 ->get()
