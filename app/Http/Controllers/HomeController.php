@@ -85,24 +85,7 @@ class HomeController extends Controller
         // Data untuk hero section (dari monitoring)
         $latestKecamatanImportId = KecamatanProgress::max('import_id');
         $kecamatanProgress = KecamatanProgress::where('import_id', $latestKecamatanImportId)
-            ->selectRaw('
-                kecamatan,
-                SUM(total_assignment) as total_assignment,
-                SUM(submit) as submit
-            ')->groupBy('kecamatan')->get();
-
-        // Format progress data for each kecamatan
-        $progressData = [];
-        foreach ($kecamatanProgress as $data) {
-            $progress = $data->total_assignment > 0
-                ? round(($data->submit / $data->total_assignment) * 100, 1)
-                : 0;
-            $progressData[$data->kecamatan] = [
-                'target' => $data->total_assignment,
-                'completed' => $data->submit,
-                'progress' => $progress,
-            ];
-        }
+            ->get();
 
         // Calculate totals
         $totalTarget = $kecamatanProgress->sum('total_assignment');

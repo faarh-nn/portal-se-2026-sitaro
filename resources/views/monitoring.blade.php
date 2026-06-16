@@ -38,8 +38,8 @@
     </nav>
 
     <div class="monitoring-section__container">
-        <x-sections.leaderboard-pcl :leaderboardData="$leaderboardData" :leaderboardDataPaginated="$leaderboardDataPaginated" :lastUpdate="$leaderboardLastUpdate" />
-        <x-sections.leaderboard-pml :pmlLeaderboardData="$pmlLeaderboardData" :pmlLeaderboardDataPaginated="$pmlLeaderboardDataPaginated" :lastUpdate="$pmlLeaderboardLastUpdate" />
+        <x-sections.leaderboard-pcl :leaderboardData="$leaderboardData" :leaderboardDataPaginated="$leaderboardDataPaginated" :leaderboardLastUpdate="$leaderboardLastUpdate" />
+        <x-sections.leaderboard-pml :pmlLeaderboardData="$pmlLeaderboardData" :pmlLeaderboardDataPaginated="$pmlLeaderboardDataPaginated" :pmlLeaderboardLastUpdate="$pmlLeaderboardLastUpdate" />
         <x-sections.progress-pcl :pclData="$pclData" :pclTotals="$pclTotals" :pclDataPaginated="$pclDataPaginated" :pmlList="$pmlList" :lastUpdate="$lastUpdate" />
         <x-sections.progress-pml :pmlData="$pmlData" :pmlTotals="$pmlTotals" :lastUpdate="$lastUpdate" />
     </div>

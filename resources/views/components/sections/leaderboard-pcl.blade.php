@@ -5,6 +5,55 @@
         <p class="leaderboard-pcl__description">
             Peringkat petugas berdasarkan jumlah submit harian. Target harian minimum adalah 10 submit.
         </p>
+        @if($leaderboardLastUpdate)
+            @php
+                $importedAt = $leaderboardLastUpdate->imported_at->setTimezone('Asia/Makassar');
+                $hour = (int) $importedAt->format('H');
+                $importedAtYesterday = $importedAt->copy()->subDay();
+                $dayName = '';
+                if ($hour >= 5 && $hour < 8) {
+                    // 5 pagi WITA - 8 pagi WITA → nama hari kemarin
+                    $dayName = match ($importedAtYesterday->format('l')) {
+                        'Monday' => 'Senin',
+                        'Tuesday' => 'Selasa',
+                        'Wednesday' => 'Rabu',
+                        'Thursday' => 'Kamis',
+                        'Friday' => 'Jumat',
+                        'Saturday' => 'Sabtu',
+                        'Sunday' => 'Minggu',
+                        default => $importedAtYesterday->format('j F Y'),
+                    };
+                } elseif ($hour >= 19 && $hour <= 21) {
+                    // 7 malam WITA - 9 malam WITA → nama hari sesuai last update
+                    $dayName = match ($importedAt->format('l')) {
+                        'Monday' => 'Senin',
+                        'Tuesday' => 'Selasa',
+                        'Wednesday' => 'Rabu',
+                        'Thursday' => 'Kamis',
+                        'Friday' => 'Jumat',
+                        'Saturday' => 'Sabtu',
+                        'Sunday' => 'Minggu',
+                        default => $importedAt->format('j F Y'),
+                    };
+                } else {
+                    // Fallback: tampilkan nama hari sesuai last update untuk jam lain
+                    $dayName = match ($importedAt->format('l')) {
+                        'Monday' => 'Senin',
+                        'Tuesday' => 'Selasa',
+                        'Wednesday' => 'Rabu',
+                        'Thursday' => 'Kamis',
+                        'Friday' => 'Jumat',
+                        'Saturday' => 'Sabtu',
+                        'Sunday' => 'Minggu',
+                        default => $importedAt->format('j F Y'),
+                    };
+                }
+                $conditionText = $importedAt->format('j F Y H:i') . ' WITA';
+            @endphp
+            <div class="leaderboard-pcl__last-update-badge">
+                Leaderboard {{ $dayName }} kondisi {{ $conditionText }}
+            </div>
+        @endif
     </div>
 
     @php
@@ -151,9 +200,9 @@
             <h3 class="leaderboard-pcl__table-title">Klasemen Lengkap</h3>
             <div class="leaderboard-pcl__table-meta">
                 <span class="leaderboard-pcl__table-count">{{ $leaderboardDataPaginated->total() }} PCL</span>
-                @if($lastUpdate)
+                @if($leaderboardLastUpdate)
                     <span class="leaderboard-pcl__table-last-update">
-                        Kondisi {{ $lastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
+                        Kondisi {{ $leaderboardLastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
                     </span>
                 @endif
             </div>

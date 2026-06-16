@@ -4,8 +4,39 @@
         <h2 class="leaderboard-pml__title">Leaderboard Petugas Pemeriksa Lapangan (PML)</h2>
         <p class="leaderboard-pml__description">
             Peringkat petugas berdasarkan jumlah reject + approve harian.
-            Target harian = 5 × jumlah PCL yang dibawahi.
+            Target harian = 5 × jumlah PCL yang diatasi.
         </p>
+        @if($pmlLeaderboardLastUpdate)
+            @php
+                $importedAt = $pmlLeaderboardLastUpdate->imported_at->setTimezone('Asia/Makassar');
+                $hour = (int) $importedAt->format('H');
+                $importedAtYesterday = $importedAt->copy()->subDay();
+                $dayName = '';
+                if ($hour >= 5 && $hour < 8) {
+                    $dayName = match ($importedAtYesterday->format('l')) {
+                        'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
+                        'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu',
+                        default => $importedAtYesterday->format('j F Y'),
+                    };
+                } elseif ($hour >= 19 && $hour <= 21) {
+                    $dayName = match ($importedAt->format('l')) {
+                        'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
+                        'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu',
+                        default => $importedAt->format('j F Y'),
+                    };
+                } else {
+                    $dayName = match ($importedAt->format('l')) {
+                        'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
+                        'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu',
+                        default => $importedAt->format('j F Y'),
+                    };
+                }
+                $conditionText = $importedAt->format('j F Y H:i') . ' WITA';
+            @endphp
+            <div class="leaderboard-pml__last-update-badge">
+                Leaderboard {{ $dayName }} kondisi {{ $conditionText }}
+            </div>
+        @endif
     </div>
 
     @php
@@ -45,7 +76,7 @@
                     </div>
                 </div>
                 <div class="leaderboard-pml__target-info">
-                    <span class="leaderboard-pml__target-threshold">Target: ≥{{ $rank2['target_threshold'] }}</span>
+                    <span class="leaderboard-pml__target-threshold">Target: >={{ $rank2['target_threshold'] }}</span>
                 </div>
                 <div class="leaderboard-pml__target-badge {{ $rank2['target_met'] ? 'leaderboard-pml__target-badge--met' : 'leaderboard-pml__target-badge--not-met' }}">
                     {{ $rank2['target_met'] ? 'Target Terpenuhi' : 'Belum Target' }}
@@ -87,7 +118,7 @@
                     </div>
                 </div>
                 <div class="leaderboard-pml__target-info">
-                    <span class="leaderboard-pml__target-threshold leaderboard-pml__target-threshold--lg">Target: ≥{{ $rank1['target_threshold'] }}</span>
+                    <span class="leaderboard-pml__target-threshold leaderboard-pml__target-threshold--lg">Target: >={{ $rank1['target_threshold'] }}</span>
                 </div>
                 <div class="leaderboard-pml__target-badge {{ $rank1['target_met'] ? 'leaderboard-pml__target-badge--met' : 'leaderboard-pml__target-badge--not-met' }}">
                     {{ $rank1['target_met'] ? 'Target Terpenuhi' : 'Belum Target' }}
@@ -124,7 +155,7 @@
                     </div>
                 </div>
                 <div class="leaderboard-pml__target-info">
-                    <span class="leaderboard-pml__target-threshold">Target: ≥{{ $rank3['target_threshold'] }}</span>
+                    <span class="leaderboard-pml__target-threshold">Target: >={{ $rank3['target_threshold'] }}</span>
                 </div>
                 <div class="leaderboard-pml__target-badge {{ $rank3['target_met'] ? 'leaderboard-pml__target-badge--met' : 'leaderboard-pml__target-badge--not-met' }}">
                     {{ $rank3['target_met'] ? 'Target Terpenuhi' : 'Belum Target' }}
@@ -172,9 +203,9 @@
             <h3 class="leaderboard-pml__table-title">Klasemen Lengkap</h3>
             <div class="leaderboard-pml__table-meta">
                 <span class="leaderboard-pml__table-count">{{ $pmlLeaderboardDataPaginated->total() }} PML</span>
-                @if($lastUpdate)
+                @if($pmlLeaderboardLastUpdate)
                     <span class="leaderboard-pml__table-last-update">
-                        Kondisi {{ $lastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
+                        Kondisi {{ $pmlLeaderboardLastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
                     </span>
                 @endif
             </div>
@@ -230,7 +261,7 @@
                                 <span class="leaderboard-pml__combined-value">{{ $pml['daily_combined'] }}</span>
                             </td>
                             <td class="leaderboard-pml__target-cell">
-                                <span class="leaderboard-pml__target-badge-inline">≥{{ $pml['target_threshold'] }}</span>
+                                <span class="leaderboard-pml__target-badge-inline">>={{ $pml['target_threshold'] }}</span>
                             </td>
                             <td class="leaderboard-pml__status-cell">
                                 <span class="leaderboard-pml__status-badge {{ $pml['target_met'] ? 'leaderboard-pml__status-badge--met' : 'leaderboard-pml__status-badge--not-met' }}">

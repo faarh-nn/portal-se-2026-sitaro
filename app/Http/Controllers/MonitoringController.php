@@ -27,12 +27,7 @@ class MonitoringController extends Controller
 
         // Get latest data from database for kecamatan progress
         // Filter by latest import_id to avoid double counting from cumulative data
-        $kecamatanProgress = KecamatanProgress::where('import_id', $latestKecamatanImportId)
-            ->selectRaw('
-                kecamatan,
-                SUM(total_assignment) as total_assignment,
-                SUM(submit) as submit
-            ')->groupBy('kecamatan')->get();
+        $kecamatanProgress = KecamatanProgress::where('import_id', $latestKecamatanImportId)->get();
 
         // Format progress data for each kecamatan
         $progressData = [];

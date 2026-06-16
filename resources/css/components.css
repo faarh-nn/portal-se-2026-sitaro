@@ -5705,6 +5705,11 @@ ul, ol {
     text-align: center;
     max-width: 800px;
     margin: 0 auto 48px auto;
+    position: relative;
+}
+
+.leaderboard-pcl__header-content {
+    text-align: center;
 }
 
 .leaderboard-pcl__eyebrow {
@@ -5733,6 +5738,18 @@ ul, ol {
 .leaderboard-pcl__description {
     font-size: 14px;
     color: var(--color-ink-mute);
+    margin-bottom: 16px;
+}
+
+.leaderboard-pcl__last-update-badge {
+    display: inline-block;
+    background-color: rgba(247, 144, 57, 0.15);
+    color: var(--color-primary-deep);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: var(--rounded-pill);
+    margin-top: 8px;
 }
 
 /* Podium Section */
@@ -6466,6 +6483,18 @@ ul, ol {
 .leaderboard-pml__description {
     font-size: 14px;
     color: var(--color-ink-mute);
+    margin-bottom: 16px;
+}
+
+.leaderboard-pml__last-update-badge {
+    display: inline-block;
+    background-color: rgba(139, 92, 246, 0.12);
+    color: #8B5CF6;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: var(--rounded-pill);
+    margin-top: 8px;
 }
 
 /* Podium Section */
