@@ -24,7 +24,7 @@
         <div class="navbar__nav">
             <a href="{{ url('/') }}" class="navbar__link{{ request()->is('/') ? ' navbar__link--active' : '' }}">Beranda</a>
             <a href="{{ route('monitoring') }}" class="navbar__link{{ request()->is('monitoring') ? ' navbar__link--active' : '' }}">Monitoring Progress</a>
-            <a href="#" class="navbar__link">Tanya AI</a>
+            <a href="https://api.whatsapp.com/send?phone=6281228580272&text=Halo%5BLangsung Kirim Pesan Ini Untuk Mentrigger AI%5D" target="_blank" class="navbar__link">Tanya AI</a>
             @auth
                 @if(Auth::user()->role === 'admin')
                     <a href="{{ route('admin.dashboard') }}" class="navbar__link{{ request()->is('admin*') ? ' navbar__link--active' : '' }}">Admin</a>
@@ -131,7 +131,7 @@
         <div class="navbar__mobile-nav">
             <a href="{{ url('/') }}" class="navbar__mobile-link{{ request()->is('/') ? ' navbar__mobile-link--active' : '' }}">Beranda</a>
             <a href="{{ route('monitoring') }}" class="navbar__mobile-link{{ request()->is('monitoring') ? ' navbar__mobile-link--active' : '' }}">Monitoring Progress</a>
-            <a href="#" class="navbar__mobile-link">Tanya AI</a>
+            <a href="https://api.whatsapp.com/send?phone=6281228580272&text=Halo%5BLangsung Kirim Pesan Ini Untuk Mentrigger AI%5D" target="_blank" class="navbar__mobile-link">Tanya AI</a>
         </div>
         <div class="navbar__mobile-actions">
             @auth
