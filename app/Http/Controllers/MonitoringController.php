@@ -14,6 +14,7 @@ use App\Models\PmlProgress;
 use App\Models\PmlTotalAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Response;
 
 class MonitoringController extends Controller
 {
@@ -381,6 +382,7 @@ class MonitoringController extends Controller
     public function getLeaderboardPage(Request $request)
     {
         $page = (int) $request->get('page', 1);
+        $statusFilter = $request->get('status', '');
         $perPage = 5;
 
         // Get latest leaderboard data
@@ -403,6 +405,17 @@ class MonitoringController extends Controller
                     'kecamatan_string' => $item->kecamatan_string,
                 ];
             });
+
+            // Apply status filter
+            if ($statusFilter === 'met') {
+                $allData = $allData->filter(function ($item) {
+                    return $item['target_met'] === true;
+                })->values();
+            } elseif ($statusFilter === 'not_met') {
+                $allData = $allData->filter(function ($item) {
+                    return $item['target_met'] === false;
+                })->values();
+            }
 
             $offset = ($page - 1) * $perPage;
             $slicedData = $allData->slice($offset, $perPage)->values();
@@ -433,6 +446,7 @@ class MonitoringController extends Controller
     public function getPmlLeaderboardPage(Request $request)
     {
         $page = (int) $request->get('page', 1);
+        $statusFilter = $request->get('status', '');
         $perPage = 5;
 
         // Get latest PML leaderboard data
@@ -458,6 +472,17 @@ class MonitoringController extends Controller
                 ];
             });
 
+            // Apply status filter
+            if ($statusFilter === 'met') {
+                $allData = $allData->filter(function ($item) {
+                    return $item['target_met'] === true;
+                })->values();
+            } elseif ($statusFilter === 'not_met') {
+                $allData = $allData->filter(function ($item) {
+                    return $item['target_met'] === false;
+                })->values();
+            }
+
             $offset = ($page - 1) * $perPage;
             $slicedData = $allData->slice($offset, $perPage)->values();
 
@@ -480,6 +505,146 @@ class MonitoringController extends Controller
                 'pmlLeaderboardPaginated' => $pmlLeaderboardPaginated,
             ])->render(),
             'total' => $pmlLeaderboardPaginated->total(),
+        ]);
+    }
+
+    public function exportPclExcel()
+    {
+        // Get PCL progress data from database
+        $latestPclImportId = PclProgress::max('import_id');
+        $pclProgressData = PclProgress::where('import_id', $latestPclImportId)
+            ->selectRaw('
+                email,
+                SUM(open) as open,
+                SUM(submit) as submit,
+                SUM(reject) as reject,
+                SUM(completed) as completed
+            ')->groupBy('email')->get();
+
+        // Get PCL total assignments
+        $pclTotalAssignments = PclTotalAssignment::pluck('total_assignment', 'email');
+
+        // Get PCL to PML mapping
+        $pclPmlMappings = PclPml::with('pml')->get()->keyBy('pcl_email');
+
+        // Format PCL data
+        $pclData = [];
+        $no = 1;
+        foreach ($pclProgressData as $pcl) {
+            $officer = OfficerMapping::where('email', $pcl->email)->first();
+            $pclName = $officer->name ?? $pcl->email;
+
+            // Get PML name from mapping
+            $pmlMapping = $pclPmlMappings->get($pcl->email);
+            $pmlName = $pmlMapping && $pmlMapping->pml ? $pmlMapping->pml->name : '-';
+
+            $totalAssignment = $pclTotalAssignments[$pcl->email] ?? 0;
+            $submitRatio = $totalAssignment > 0
+                ? round(($pcl->submit / $totalAssignment) * 100, 1)
+                : 0;
+
+            $pclData[] = [
+                'no' => $no,
+                'nama' => $pclName,
+                'email' => $pcl->email,
+                'open' => $pcl->open,
+                'submit' => $pcl->submit,
+                'reject' => $pcl->reject,
+                'completed' => $pcl->completed,
+                'target' => $totalAssignment,
+                'pml' => $pmlName,
+                'submit_ratio' => $submitRatio,
+            ];
+            $no++;
+        }
+
+        // Create CSV content
+        $csvContent = "No,Nama PCL,Email,Open,Submit,Reject,Completed,Target,PML,Progress (%)\n";
+        foreach ($pclData as $row) {
+            $csvContent .= sprintf(
+                "%d,%s,%s,%d,%d,%d,%d,%d,%s,%.1f\n",
+                $row['no'],
+                '"'.str_replace('"', '""', $row['nama']).'"',
+                $row['email'],
+                $row['open'],
+                $row['submit'],
+                $row['reject'],
+                $row['completed'],
+                $row['target'],
+                '"'.str_replace('"', '""', $row['pml']).'"',
+                $row['submit_ratio']
+            );
+        }
+
+        $filename = 'pcl_progress_'.date('Y-m-d_His').'.csv';
+
+        return Response::make($csvContent, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
+    }
+
+    public function exportPmlExcel()
+    {
+        // Get PML progress data from database
+        $latestPmlImportId = PmlProgress::max('import_id');
+        $pmlProgressData = PmlProgress::where('import_id', $latestPmlImportId)
+            ->selectRaw('
+                email,
+                SUM(submit) as submit,
+                SUM(reject) as reject,
+                SUM(approve) as approved
+            ')->groupBy('email')->get();
+
+        // Get PML total assignments
+        $pmlTotalAssignments = PmlTotalAssignment::pluck('total_assignment', 'email');
+
+        // Format PML data
+        $pmlData = [];
+        $no = 1;
+        foreach ($pmlProgressData as $pml) {
+            $officer = OfficerMapping::where('email', $pml->email)->first();
+            $pmlName = $officer->name ?? $pml->email;
+
+            $totalAssignment = $pmlTotalAssignments[$pml->email] ?? 0;
+            $progressRatio = $totalAssignment > 0
+                ? round(($pml->approved / $totalAssignment) * 100, 1)
+                : 0;
+
+            $pmlData[] = [
+                'no' => $no,
+                'nama' => $pmlName,
+                'email' => $pml->email,
+                'submit' => $pml->submit,
+                'reject' => $pml->reject,
+                'approved' => $pml->approved,
+                'target' => $totalAssignment,
+                'progress' => $progressRatio,
+            ];
+            $no++;
+        }
+
+        // Create CSV content
+        $csvContent = "No,Nama PML,Email,Submit,Reject,Approved,Target,Progress (%)\n";
+        foreach ($pmlData as $row) {
+            $csvContent .= sprintf(
+                "%d,%s,%s,%d,%d,%d,%d,%.1f\n",
+                $row['no'],
+                '"'.str_replace('"', '""', $row['nama']).'"',
+                $row['email'],
+                $row['submit'],
+                $row['reject'],
+                $row['approved'],
+                $row['target'],
+                $row['progress']
+            );
+        }
+
+        $filename = 'pml_progress_'.date('Y-m-d_His').'.csv';
+
+        return Response::make($csvContent, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 }

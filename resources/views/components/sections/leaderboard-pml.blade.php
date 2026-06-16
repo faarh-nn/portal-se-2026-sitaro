@@ -180,18 +180,30 @@
             </div>
         </div>
 
+        {{-- Filter by Status Target --}}
+        <div class="leaderboard-pml__filters">
+            <div class="leaderboard-pml__filter-group">
+                <label class="leaderboard-pml__filter-label">Filter Status:</label>
+                <select id="pml-leaderboard-status-filter" class="leaderboard-pml__filter-select" x-model="statusFilter" @change="loadPage(1)">
+                    <option value="">Semua</option>
+                    <option value="met">Target Terpenuhi</option>
+                    <option value="not_met">Belum Target</option>
+                </select>
+            </div>
+        </div>
+
         <div class="leaderboard-pml__table-wrapper">
             <table class="leaderboard-pml__table">
                 <thead>
                     <tr>
-                        <th>Ranking</th>
+                        <th>Rank</th>
                         <th>Nama PML</th>
                         <th>Jumlah PCL</th>
                         <th>Reject Harian</th>
                         <th>Approve Harian</th>
                         <th>Total (R+A)</th>
                         <th>Target</th>
-                        <th>Status</th>
+                        <th>Status Target</th>
                     </tr>
                 </thead>
                 <tbody id="pml-leaderboard-table-body">
@@ -241,6 +253,7 @@
     function leaderboardPml() {
         return {
             currentPage: {{ $pmlLeaderboardDataPaginated->currentPage() }},
+            statusFilter: '',
 
             initPagination() {
                 const paginationWrapper = document.getElementById('pml-leaderboard-pagination-wrapper');
@@ -259,8 +272,14 @@
             loadPage(page) {
                 const tableBody = document.getElementById('pml-leaderboard-table-body');
                 const paginationWrapper = document.getElementById('pml-leaderboard-pagination-wrapper');
+                const statusFilter = this.statusFilter;
 
-                fetch(`/pml-leaderboard-page?page=${page}`)
+                let url = `/pml-leaderboard-page?page=${page}`;
+                if (statusFilter) {
+                    url += `&status=${statusFilter}`;
+                }
+
+                fetch(url)
                     .then(response => response.json())
                     .then(data => {
                         tableBody.innerHTML = data.html;
@@ -284,8 +303,14 @@
                 const page = btn.dataset.page;
                 const tableBody = document.getElementById('pml-leaderboard-table-body');
                 const paginationWrapperEl = document.getElementById('pml-leaderboard-pagination-wrapper');
+                const statusFilter = document.getElementById('pml-leaderboard-status-filter')?.value || '';
 
-                fetch(`/pml-leaderboard-page?page=${page}`)
+                let url = `/pml-leaderboard-page?page=${page}`;
+                if (statusFilter) {
+                    url += `&status=${statusFilter}`;
+                }
+
+                fetch(url)
                     .then(response => response.json())
                     .then(data => {
                         tableBody.innerHTML = data.html;

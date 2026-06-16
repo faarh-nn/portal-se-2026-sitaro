@@ -83,6 +83,14 @@
                             Kondisi {{ $lastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
                         </span>
                     @endif
+                    <a href="{{ route('pml.export') }}" class="pml-table-download" title="Unduh Excel">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Unduh</span>
+                    </a>
                 </div>
             </div>
 
@@ -94,6 +102,7 @@
                             <th>Nama PML</th>
                             <th>Submit</th>
                             <th>Reject</th>
+                            <th>Approved</th>
                             <th class="pml-table__sortable" x-on:click="toggleSort('progress')">
                                 Approved/Total Assignment
                                 <span class="pml-table__sort-icon">
@@ -117,6 +126,7 @@
                                 <td class="pml-table__name" x-text="pml.name"></td>
                                 <td class="pml-table__submit" x-text="pml.submit"></td>
                                 <td class="pml-table__reject" x-text="pml.reject"></td>
+                                <td class="pml-table__approved-value" x-text="pml.approved"></td>
                                 <td class="pml-table__approved">
                                     <div class="pml-progress">
                                         <div class="pml-progress__bar">
@@ -128,7 +138,7 @@
                             </tr>
                         </template>
                         <tr x-show="filteredData.length === 0">
-                            <td colspan="5" class="pml-table__empty">Tidak ada data yang cocok</td>
+                            <td colspan="6" class="pml-table__empty">Tidak ada data yang cocok</td>
                         </tr>
                     </tbody>
                 </table>

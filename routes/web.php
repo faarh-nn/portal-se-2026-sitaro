@@ -14,6 +14,8 @@ Route::get('/pcl-table-page', [MonitoringController::class, 'getPclTablePage'])-
 Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring');
 Route::get('/leaderboard-pcl-page', [MonitoringController::class, 'getLeaderboardPage'])->name('leaderboard.pcl.page');
 Route::get('/pml-leaderboard-page', [MonitoringController::class, 'getPmlLeaderboardPage'])->name('pml.leaderboard.page');
+Route::get('/pcl-export', [MonitoringController::class, 'exportPclExcel'])->name('pcl.export');
+Route::get('/pml-export', [MonitoringController::class, 'exportPmlExcel'])->name('pml.export');
 
 // Auth routes
 Route::middleware('guest')->group(function () {

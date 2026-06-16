@@ -159,11 +159,23 @@
             </div>
         </div>
 
+        {{-- Filter by Status Target --}}
+        <div class="leaderboard-pcl__filters">
+            <div class="leaderboard-pcl__filter-group">
+                <label class="leaderboard-pcl__filter-label">Filter Status:</label>
+                <select id="leaderboard-status-filter" class="leaderboard-pcl__filter-select" x-model="statusFilter" @change="loadPage(1)">
+                    <option value="">Semua</option>
+                    <option value="met">Target Terpenuhi</option>
+                    <option value="not_met">Belum Target</option>
+                </select>
+            </div>
+        </div>
+
         <div class="leaderboard-pcl__table-wrapper">
             <table class="leaderboard-pcl__table">
                 <thead>
                     <tr>
-                        <th>Ranking</th>
+                        <th>Rank</th>
                         <th>Nama PCL</th>
                         <th>Wilayah Kerja</th>
                         <th>Submit Harian</th>
@@ -213,6 +225,7 @@
         return {
             currentPage: {{ $leaderboardDataPaginated->currentPage() }},
             totalCount: {{ $leaderboardDataPaginated->total() }},
+            statusFilter: '',
 
             initPagination() {
                 const paginationWrapper = document.getElementById('leaderboard-pagination-wrapper');
@@ -231,8 +244,14 @@
             loadPage(page) {
                 const tableBody = document.getElementById('leaderboard-table-body');
                 const paginationWrapper = document.getElementById('leaderboard-pagination-wrapper');
+                const statusFilter = this.statusFilter;
 
-                fetch(`/leaderboard-pcl-page?page=${page}`)
+                let url = `/leaderboard-pcl-page?page=${page}`;
+                if (statusFilter) {
+                    url += `&status=${statusFilter}`;
+                }
+
+                fetch(url)
                     .then(response => response.json())
                     .then(data => {
                         tableBody.innerHTML = data.html;
@@ -256,8 +275,14 @@
                 const page = btn.dataset.page;
                 const tableBody = document.getElementById('leaderboard-table-body');
                 const paginationWrapperEl = document.getElementById('leaderboard-pagination-wrapper');
+                const statusFilter = document.getElementById('leaderboard-status-filter')?.value || '';
 
-                fetch(`/leaderboard-pcl-page?page=${page}`)
+                let url = `/leaderboard-pcl-page?page=${page}`;
+                if (statusFilter) {
+                    url += `&status=${statusFilter}`;
+                }
+
+                fetch(url)
                     .then(response => response.json())
                     .then(data => {
                         tableBody.innerHTML = data.html;
