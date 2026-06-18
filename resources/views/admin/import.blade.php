@@ -181,6 +181,40 @@
                 <p class="admin-import-section__desc">Hapus semua data leaderboard PCL dan PML. Data monitoring tidak akan terpengaruh.</p>
             </div>
 
+            {{-- PCL-PML Mapping Section --}}
+            <div class="admin-import-section">
+                <div class="admin-import-section__header">
+                    <h3 class="admin-import-section__title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 20h5v-2a3 3 0 0 0-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 0 1 9.288 0M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm6 3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM7 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />
+                        </svg>
+                        Mapping PCL-PML
+                    </h3>
+                    <form action="{{ route('admin.import.clear-pcl-pml') }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus seluruh data mapping PCL-PML?');">
+                        @csrf
+                        <button type="submit" class="btn-danger-pill">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Hapus Data PCL-PML
+                        </button>
+                    </form>
+                </div>
+                <p class="admin-import-section__desc">Upload file mapping antara PCL dan PML. Format: Kolom A = Email PCL, Kolom B = Email PML.</p>
+
+                <form action="{{ route('admin.import.pcl-pml') }}" method="POST" enctype="multipart/form-data" class="admin-import-form">
+                    @csrf
+                    <div class="admin-form-group">
+                        <div class="admin-form-input-group">
+                            <input type="file" name="file_pcl_pml" accept=".xlsx,.xls" class="admin-form-file" required>
+                            <button type="submit" class="btn-primary-pill">Upload</button>
+                        </div>
+                        <span class="admin-form-hint">Format: Kolom A = Email PCL, Kolom B = Email PML</span>
+                    </div>
+                </form>
+            </div>
+
             {{-- Import History --}}
             <div class="admin-history">
                 <h3 class="admin-history__title">Riwayat Import</h3>

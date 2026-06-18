@@ -5629,6 +5629,11 @@ ul, ol {
     color: #3B82F6;
 }
 
+.admin-badge--mapping_pcl_pml {
+    background-color: rgba(236, 72, 153, 0.15);
+    color: #EC4899;
+}
+
 .admin-badge--data_pml {
     background-color: rgba(16, 185, 129, 0.15);
     color: #10B981;

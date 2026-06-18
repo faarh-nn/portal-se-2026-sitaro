@@ -565,6 +565,72 @@ class ImportController extends Controller
     }
 
     /**
+     * Import PCL-PML mapping from Excel.
+     */
+    public function importPclPmlMapping(Request $request)
+    {
+        $request->validate([
+            'file_pcl_pml' => 'required|file|mimes:xlsx,xls|max:10240',
+        ]);
+
+        $import = MonitoringImport::create([
+            'file_name' => $request->file('file_pcl_pml')->getClientOriginalName(),
+            'type' => 'mapping_pcl_pml',
+            'status' => 'processing',
+            'imported_by' => auth()->id(),
+            'imported_at' => now(),
+        ]);
+
+        try {
+            $file = $request->file('file_pcl_pml');
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+
+            // Skip header row
+            $count = 0;
+            foreach (array_slice($rows, 1) as $row) {
+                if (empty($row[0]) || empty($row[1])) {
+                    continue;
+                }
+
+                PclPml::updateOrCreate(
+                    ['pcl_email' => strtolower(trim($row[0]))],
+                    ['pml_email' => strtolower(trim($row[1]))]
+                );
+                $count++;
+            }
+
+            $import->markCompleted($count);
+
+            return redirect()->back()->with('success', "Berhasil import {$count} data mapping PCL-PML.");
+        } catch (\Exception $e) {
+            Log::error('PCL-PML mapping import failed', [
+                'import_id' => $import->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            $import->markFailed($e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal import: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Clear PCL-PML mapping data.
+     */
+    public function clearPclPmlData(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        PclPml::truncate();
+
+        return redirect()->back()->with('success', 'Data mapping PCL-PML berhasil dihapus.');
+    }
+
+    /**
      * Calculate and store daily submit values for PCL leaderboard.
      *
      * This calculates the difference between current import and previous import
