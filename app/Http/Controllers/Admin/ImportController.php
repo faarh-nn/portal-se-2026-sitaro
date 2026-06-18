@@ -550,6 +550,21 @@ class ImportController extends Controller
     }
 
     /**
+     * Clear leaderboard data (pcl_daily_submits and pml_daily_submits).
+     */
+    public function clearLeaderboardData(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        PclDailySubmit::truncate();
+        PmlDailySubmit::truncate();
+
+        return redirect()->back()->with('success', 'Data leaderboard berhasil dibersihkan.');
+    }
+
+    /**
      * Calculate and store daily submit values for PCL leaderboard.
      *
      * This calculates the difference between current import and previous import
@@ -629,6 +644,13 @@ class ImportController extends Controller
      *
      * Target threshold = 0.5 * 10 * pcl_count = 5 * pcl_count
      * PML meets target if daily_reject + daily_approve >= threshold
+     *
+     * Daily reject calculation rules:
+     * - Kondisi 1: currentReject < previousReject → dailyReject = currentReject
+     * - Kondisi 2: currentReject > previousReject → dailyReject = currentReject - previousReject
+     * - Kondisi 3: currentReject = previousReject
+     *   - currentApprove = previousApprove → dailyReject = 0
+     *   - currentApprove ≠ previousApprove → dailyReject = currentReject
      */
     private function calculatePmlDailySubmits(string $dataDate): void
     {
@@ -680,7 +702,25 @@ class ImportController extends Controller
             $previousReject = $previousData->get($email)?->reject ?? 0;
             $previousApprove = $previousData->get($email)?->approve ?? 0;
 
-            $dailyReject = max(0, $currentReject - $previousReject);
+            // Calculate daily reject based on conditions:
+            // Kondisi 1: currentReject < previousReject → dailyReject = currentReject
+            // Kondisi 2: currentReject > previousReject → dailyReject = currentReject - previousReject
+            // Kondisi 3: currentReject = previousReject
+            //   a. currentApprove = previousApprove → dailyReject = 0
+            //   b. currentApprove ≠ previousApprove → dailyReject = currentReject
+            if ($currentReject < $previousReject) {
+                $dailyReject = $currentReject;
+            } elseif ($currentReject > $previousReject) {
+                $dailyReject = $currentReject - $previousReject;
+            } else {
+                // currentReject == previousReject
+                if ($currentApprove === $previousApprove) {
+                    $dailyReject = 0;
+                } else {
+                    $dailyReject = $currentReject;
+                }
+            }
+
             $dailyApprove = max(0, $currentApprove - $previousApprove);
             $dailyCombined = $dailyReject + $dailyApprove;
 

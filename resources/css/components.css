@@ -4706,7 +4706,7 @@ ul, ol {
     color: #EF4444;
 }
 
-.pcl-stat-card--completed .pcl-stat-card__icon {
+.pcl-stat-card--approve .pcl-stat-card__icon {
     background-color: rgba(16, 185, 129, 0.15);
     color: #10B981;
 }
@@ -5207,6 +5207,7 @@ ul, ol {
 .admin-container {
     max-width: 1280px;
     margin: 0 auto;
+    padding-top: 60px;
 }
 
 .admin-title {
@@ -5393,6 +5394,7 @@ ul, ol {
     display: flex;
     flex-wrap: wrap;
     gap: 24px;
+    margin-top: 24px;
     margin-bottom: 32px;
     padding: 16px 20px;
     background-color: var(--color-surface-elev);
@@ -5429,6 +5431,7 @@ ul, ol {
     border-radius: var(--rounded-xl);
     padding: 24px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    margin-bottom: 32px;
 }
 
 .admin-import-section__title {

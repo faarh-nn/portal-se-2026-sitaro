@@ -156,6 +156,31 @@
                 </div>
             </div>
 
+            {{-- Leaderboard Data Section --}}
+            <div class="admin-import-section">
+                <div class="admin-import-section__header">
+                    <h3 class="admin-import-section__title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20V10"></path>
+                            <path d="M18 20V4"></path>
+                            <path d="M6 20v-4"></path>
+                        </svg>
+                        Data Leaderboard
+                    </h3>
+                    <form action="{{ route('admin.import.clear-leaderboard') }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus seluruh data leaderboard?');">
+                        @csrf
+                        <button type="submit" class="btn-danger-pill">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Bersihkan Data Leaderboard
+                        </button>
+                    </form>
+                </div>
+                <p class="admin-import-section__desc">Hapus semua data leaderboard PCL dan PML. Data monitoring tidak akan terpengaruh.</p>
+            </div>
+
             {{-- Import History --}}
             <div class="admin-history">
                 <h3 class="admin-history__title">Riwayat Import</h3>

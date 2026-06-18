@@ -50,7 +50,7 @@
                 </div>
             </div>
 
-            <div class="pcl-stat-card pcl-stat-card--completed">
+            <div class="pcl-stat-card pcl-stat-card--approve">
                 <div class="pcl-stat-card__icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -58,8 +58,8 @@
                     </svg>
                 </div>
                 <div class="pcl-stat-card__content">
-                    <span class="pcl-stat-card__value">{{ number_format($pclTotals['completed']) }}</span>
-                    <span class="pcl-stat-card__label">Completed</span>
+                    <span class="pcl-stat-card__value">{{ number_format($pclTotals['approve']) }}</span>
+                    <span class="pcl-stat-card__label">Approve</span>
                 </div>
             </div>
         </div>
@@ -134,18 +134,18 @@
                             <th>Open</th>
                             <th>Submit</th>
                             <th>Reject</th>
-                            <th>Completed</th>
+                            <th>Approve</th>
                             <th>Nama PML</th>
-                            <th class="pcl-table__sortable" x-on:click="toggleSort('submit_ratio')">
-                                Submit/Assignment
+                            <th class="pcl-table__sortable" x-on:click="toggleSort('submit_and_approve_ratio')">
+                                (Submit + Approve)/Assignment
                                 <span class="pcl-table__sort-icon">
-                                    <svg x-show="sortBy !== 'submit_ratio'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg x-show="sortBy !== 'submit_and_approve_ratio'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
                                     </svg>
-                                    <svg x-show="sortBy === 'submit_ratio' && sortDirection === 'asc'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg x-show="sortBy === 'submit_and_approve_ratio' && sortDirection === 'asc'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M7 9l5-5 5 5"/>
                                     </svg>
-                                    <svg x-show="sortBy === 'submit_ratio' && sortDirection === 'desc'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg x-show="sortBy === 'submit_and_approve_ratio' && sortDirection === 'desc'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M7 15l5 5 5-5"/>
                                     </svg>
                                 </span>
@@ -155,7 +155,7 @@
                     <tbody id="pcl-table-body">
                         @foreach($pclDataPaginated as $index => $pcl)
                             @php
-                                $pclBarColor = $pcl['submit_ratio'] == 100 ? '#10B981' : ($pcl['submit_ratio'] >= 71 ? '#00a6fb' : ($pcl['submit_ratio'] >= 41 ? '#F59E0B' : '#EF4444'));
+                                $pclBarColor = $pcl['submit_and_approve_ratio'] == 100 ? '#10B981' : ($pcl['submit_and_approve_ratio'] >= 71 ? '#00a6fb' : ($pcl['submit_and_approve_ratio'] >= 41 ? '#F59E0B' : '#EF4444'));
                                 $rowNumber = ($pclDataPaginated->currentPage() - 1) * $pclDataPaginated->perPage() + $index + 1;
                             @endphp
                             <tr>
@@ -164,14 +164,14 @@
                                 <td class="pcl-table__open">{{ $pcl['open'] }}</td>
                                 <td class="pcl-table__submit">{{ $pcl['submit'] }}</td>
                                 <td class="pcl-table__reject">{{ $pcl['reject'] }}</td>
-                                <td class="pcl-table__completed">{{ $pcl['completed'] }}</td>
+                                <td class="pcl-table__completed">{{ $pcl['approve'] }}</td>
                                 <td class="pcl-table__pml">{{ $pcl['pml'] }}</td>
                                 <td class="pcl-table__submit-ratio">
                                     <div class="pcl-progress">
                                         <div class="pcl-progress__bar">
-                                            <div class="pcl-progress__fill" style="width: {{ $pcl['submit_ratio'] }}%; background-color: {{ $pclBarColor }}"></div>
+                                            <div class="pcl-progress__fill" style="width: {{ $pcl['submit_and_approve_ratio'] }}%; background-color: {{ $pclBarColor }}"></div>
                                         </div>
-                                        <span class="pcl-progress__value">{{ $pcl['submit'] }}/{{ $pcl['target'] }} ({{ $pcl['submit_ratio'] }}%)</span>
+                                        <span class="pcl-progress__value">{{ $pcl['submit'] + $pcl['approve'] }}/{{ $pcl['target'] }} ({{ $pcl['submit_and_approve_ratio'] }}%)</span>
                                     </div>
                                 </td>
                             </tr>

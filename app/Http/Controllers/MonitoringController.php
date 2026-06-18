@@ -32,19 +32,20 @@ class MonitoringController extends Controller
         // Format progress data for each kecamatan
         $progressData = [];
         foreach ($kecamatanProgress as $data) {
+            $submitAndApprove = ($data->submit ?? 0) + ($data->approve ?? 0);
             $progress = $data->total_assignment > 0
-                ? round(($data->submit / $data->total_assignment) * 100, 1)
+                ? round(($submitAndApprove / $data->total_assignment) * 100, 1)
                 : 0;
             $progressData[$data->kecamatan] = [
                 'target' => $data->total_assignment,
-                'completed' => $data->submit,
+                'completed' => $submitAndApprove,
                 'progress' => $progress,
             ];
         }
 
         // Calculate totals
         $totalTarget = $kecamatanProgress->sum('total_assignment');
-        $totalCompleted = $kecamatanProgress->sum('submit');
+        $totalCompleted = $kecamatanProgress->sum('submit') + $kecamatanProgress->sum('approve');
         $overallProgress = $totalTarget > 0 ? round(($totalCompleted / $totalTarget) * 100, 1) : 0;
 
         // PML (Petugas Pemeriksa Lapangan) progress data from database
@@ -98,7 +99,7 @@ class MonitoringController extends Controller
                 SUM(open) as open,
                 SUM(submit) as submit,
                 SUM(reject) as reject,
-                SUM(completed) as completed
+                SUM(approve) as approve
             ')->groupBy('email')->get();
 
         // Get PCL total assignments
@@ -122,8 +123,8 @@ class MonitoringController extends Controller
             $pmlName = $pmlMapping && $pmlMapping->pml ? $pmlMapping->pml->name : '-';
 
             $totalAssignment = $pclTotalAssignments[$pcl->email] ?? 0;
-            $submitRatio = $totalAssignment > 0
-                ? round(($pcl->submit / $totalAssignment) * 100, 1)
+            $submitAndApproveRatio = $totalAssignment > 0
+                ? round(($pcl->submit + $pcl->approve) / $totalAssignment * 100, 1)
                 : 0;
 
             $pclData[] = [
@@ -132,10 +133,10 @@ class MonitoringController extends Controller
                 'open' => $pcl->open,
                 'submit' => $pcl->submit,
                 'reject' => $pcl->reject,
-                'completed' => $pcl->completed,
+                'approve' => $pcl->approve,
                 'target' => $totalAssignment,
                 'pml' => $pmlName,
-                'submit_ratio' => $submitRatio,
+                'submit_and_approve_ratio' => $submitAndApproveRatio,
             ];
         }
 
@@ -144,7 +145,7 @@ class MonitoringController extends Controller
             'open' => $pclProgressData->sum('open'),
             'submit' => $pclProgressData->sum('submit'),
             'reject' => $pclProgressData->sum('reject'),
-            'completed' => $pclProgressData->sum('completed'),
+            'approve' => $pclProgressData->sum('approve'),
         ];
 
         // Paginate PCL data (10 per page) using Laravel's LengthAwarePaginator
@@ -285,7 +286,7 @@ class MonitoringController extends Controller
                 SUM(open) as open,
                 SUM(submit) as submit,
                 SUM(reject) as reject,
-                SUM(completed) as completed
+                SUM(approve) as approve
             ')->groupBy('email')->get();
 
         // Get PCL total assignments
@@ -305,8 +306,8 @@ class MonitoringController extends Controller
             $pmlName = $pmlMapping && $pmlMapping->pml ? $pmlMapping->pml->name : '-';
 
             $totalAssignment = $pclTotalAssignments[$pcl->email] ?? 0;
-            $submitRatio = $totalAssignment > 0
-                ? round(($pcl->submit / $totalAssignment) * 100, 1)
+            $submitAndApproveRatio = $totalAssignment > 0
+                ? round(($pcl->submit + $pcl->approve) / $totalAssignment * 100, 1)
                 : 0;
 
             $pclData[] = [
@@ -315,10 +316,10 @@ class MonitoringController extends Controller
                 'open' => $pcl->open,
                 'submit' => $pcl->submit,
                 'reject' => $pcl->reject,
-                'completed' => $pcl->completed,
+                'approve' => $pcl->approve,
                 'target' => $totalAssignment,
                 'pml' => $pmlName,
-                'submit_ratio' => $submitRatio,
+                'submit_and_approve_ratio' => $submitAndApproveRatio,
             ];
         }
 
@@ -340,7 +341,7 @@ class MonitoringController extends Controller
         }
 
         // Sort by column if provided
-        if ($sortBy && in_array($sortBy, ['submit_ratio'])) {
+        if ($sortBy && in_array($sortBy, ['submit_and_approve_ratio'])) {
             usort($pclData, function ($a, $b) use ($sortBy, $sortDirection) {
                 if ($sortDirection === 'asc') {
                     return $a[$sortBy] <=> $b[$sortBy];
@@ -513,7 +514,7 @@ class MonitoringController extends Controller
                 SUM(open) as open,
                 SUM(submit) as submit,
                 SUM(reject) as reject,
-                SUM(completed) as completed
+                SUM(approve) as approve
             ')->groupBy('email')->get();
 
         // Get PCL total assignments
@@ -534,8 +535,8 @@ class MonitoringController extends Controller
             $pmlName = $pmlMapping && $pmlMapping->pml ? $pmlMapping->pml->name : '-';
 
             $totalAssignment = $pclTotalAssignments[$pcl->email] ?? 0;
-            $submitRatio = $totalAssignment > 0
-                ? round(($pcl->submit / $totalAssignment) * 100, 1)
+            $submitAndApproveRatio = $totalAssignment > 0
+                ? round(($pcl->submit + $pcl->approve) / $totalAssignment * 100, 1)
                 : 0;
 
             $pclData[] = [
@@ -545,16 +546,16 @@ class MonitoringController extends Controller
                 'open' => $pcl->open,
                 'submit' => $pcl->submit,
                 'reject' => $pcl->reject,
-                'completed' => $pcl->completed,
+                'approve' => $pcl->approve,
                 'target' => $totalAssignment,
                 'pml' => $pmlName,
-                'submit_ratio' => $submitRatio,
+                'submit_and_approve_ratio' => $submitAndApproveRatio,
             ];
             $no++;
         }
 
         // Create CSV content
-        $csvContent = "No,Nama PCL,Email,Open,Submit,Reject,Completed,Target,PML,Progress (%)\n";
+        $csvContent = "No,Nama PCL,Email,Open,Submit,Reject,Approve,Target,PML,Progress (%)\n";
         foreach ($pclData as $row) {
             $csvContent .= sprintf(
                 "%d,%s,%s,%d,%d,%d,%d,%d,%s,%.1f\n",
@@ -564,10 +565,10 @@ class MonitoringController extends Controller
                 $row['open'],
                 $row['submit'],
                 $row['reject'],
-                $row['completed'],
+                $row['approve'],
                 $row['target'],
                 '"'.str_replace('"', '""', $row['pml']).'"',
-                $row['submit_ratio']
+                $row['submit_and_approve_ratio']
             );
         }
 
