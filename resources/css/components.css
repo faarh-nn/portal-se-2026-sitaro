@@ -7349,16 +7349,51 @@ ul, ol {
 /* ==========================================
    Monitoring Sub-Navigation Bar (Vertical)
    ========================================== */
-.monitoring-subnav {
+.monitoring-subnav-trigger {
     position: fixed;
     top: 50%;
     right: 16px;
     transform: translateY(-50%);
     z-index: 998;
+}
+
+.monitoring-subnav-trigger__circle {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-deep) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(247, 144, 57, 0.3);
+    transition: all 0.3s ease;
+}
+
+.monitoring-subnav-trigger__circle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(247, 144, 57, 0.4);
+}
+
+.monitoring-subnav {
+    position: absolute;
+    top: 0;
+    right: 0;
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-deep) 100%);
     padding: 12px 8px;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(247, 144, 57, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(10px);
+    transition: all 0.3s ease;
+}
+
+.monitoring-subnav-trigger:hover .monitoring-subnav {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
 }
 
 .monitoring-subnav__inner {
@@ -7429,7 +7464,8 @@ ul, ol {
 
 /* Hide on mobile and tablet */
 @media (max-width: 1024px) {
-    .monitoring-subnav {
+    .monitoring-subnav,
+    .monitoring-subnav-trigger {
         display: none;
     }
 
