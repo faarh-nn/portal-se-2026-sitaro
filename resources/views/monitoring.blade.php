@@ -3,13 +3,6 @@
 
     {{-- Sub-navbar untuk navigasi section --}}
     <div class="monitoring-subnav-trigger">
-        <div class="monitoring-subnav-trigger__circle">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M12 8v8"></path>
-                <path d="M8 12h8"></path>
-            </svg>
-        </div>
         <nav class="monitoring-subnav" x-data>
             <div class="monitoring-subnav__inner">
                 <a href="#leaderboard-pcl" class="monitoring-subnav__item" data-label="Leaderboard PCL" :class="{ 'active': $store.monitoring.activeSection === 'leaderboard-pcl' }">
@@ -44,6 +37,12 @@
                 </a>
             </div>
         </nav>
+        <div class="monitoring-subnav-trigger__tab">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6.75a2.25 2.25 0 0 1 2.25 2.25v13.5a2.25 2.25 0 0 1-2.25 2.25H10.5a2.25 2.25 0 0 1-2.25-2.25V15"></path>
+                <path d="M12 9l3 3-3 3"></path>
+            </svg>
+        </div>
     </div>
 
     <div class="monitoring-section__container">
