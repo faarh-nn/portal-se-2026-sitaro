@@ -200,10 +200,11 @@ class ImportController extends Controller
                 $totalRows += $count;
 
                 // Calculate and store daily submits for PML leaderboard
-                $this->calculatePmlDailySubmits($dataDate);
+                $this->calculatePmlDailySubmits($pmlImport->id, $dataDate);
             }
 
             // Import PCL data
+            $pclImport = null;
             if ($request->hasFile('file_pcl')) {
                 $pclImport = MonitoringImport::create([
                     'file_name' => $request->file('file_pcl')->getClientOriginalName(),
@@ -218,11 +219,13 @@ class ImportController extends Controller
                 $totalRows += $count;
             }
 
-            // Generate kecamatan progress from PCL data
-            $this->generateKecamatanProgress($dataDate);
+            // Generate kecamatan progress from PCL data (only if PCL was imported)
+            if ($pclImport) {
+                $this->generateKecamatanProgress($pclImport->id, $dataDate);
 
-            // Calculate and store daily submits for PCL leaderboard
-            $this->calculateDailySubmits($dataDate);
+                // Calculate and store daily submits for PCL leaderboard
+                $this->calculateDailySubmits($pclImport->id, $dataDate);
+            }
 
             DB::commit();
 
@@ -413,23 +416,13 @@ class ImportController extends Controller
     }
 
     /**
-     * Generate kecamatan progress from the latest PCL data (highest import_id).
+     * Generate kecamatan progress from the latest PCL data (by import_id).
      */
-    private function generateKecamatanProgress(string $dataDate): void
+    private function generateKecamatanProgress(int $importId, string $dataDate): void
     {
-        // Get the latest import record for PCL data
-        $import = MonitoringImport::where('type', 'data_pcl')
-            ->where('status', 'completed')
-            ->orderByDesc('id')
-            ->first();
-
-        if (! $import) {
-            return;
-        }
-
-        // Aggregate only the latest imported PCL data (by highest import_id) by kecamatan
-        $kecamatanData = PclProgress::where('data_date', $dataDate)
-            ->where('import_id', $import->id)
+        // Aggregate only the latest imported PCL data by kecamatan
+        // import_id alone is sufficient since each upload creates a new unique import_id
+        $kecamatanData = PclProgress::where('import_id', $importId)
             ->selectRaw('kecamatan, SUM(open) as open, SUM(draft) as draft, SUM(submit) as submit, SUM(approve) as approve, SUM(reject) as reject, SUM(completed) as completed')
             ->groupBy('kecamatan')
             ->get();
@@ -455,7 +448,7 @@ class ImportController extends Controller
                 'approve' => $data->approve,
                 'reject' => $data->reject,
                 'completed' => $data->completed,
-                'import_id' => $import->id,
+                'import_id' => $importId,
                 'data_date' => $dataDate,
             ]);
         }
@@ -471,47 +464,50 @@ class ImportController extends Controller
         }
 
         // Get 2 latest import records
-        $latestImports = MonitoringImport::orderByDesc('id')->take(2)->pluck('id');
+        $latestImports = MonitoringImport::orderByDesc('id')->take(2)->get();
 
         if ($latestImports->isEmpty()) {
             return redirect()->back()->with('error', 'Tidak ada data import yang bisa dihapus.');
         }
 
-        // Get latest data_date from the imports for daily submits cleanup
-        $latestDataDate = MonitoringImport::whereIn('id', $latestImports)->max('imported_at');
-        $dataDate = date('Y-m-d', strtotime($latestDataDate));
+        // Get import IDs and their data_dates for cleanup
+        $latestImportIds = $latestImports->pluck('id')->toArray();
+        $latestDataDates = $latestImports->pluck('data_date')->filter()->unique()->toArray();
+
+        // Also get import_ids of data_pcl and data_pml imports among the latest ones
+        $pclImportId = $latestImports->where('type', 'data_pcl')->max('id');
+        $pmlImportId = $latestImports->where('type', 'data_pml')->max('id');
 
         DB::beginTransaction();
 
         try {
-            // 1. Delete kecamatan_progress with latest import_id
-            $latestImportId = MonitoringImport::where('type', 'data_pcl')
-                ->orderByDesc('id')
-                ->value('id');
-            if ($latestImportId) {
-                KecamatanProgress::where('import_id', $latestImportId)->delete();
+            // 1. Delete monitoring_imports first (to get correct import_ids before deletion)
+            MonitoringImport::whereIn('id', $latestImportIds)->delete();
+
+            // 2. Delete kecamatan_progress with the deleted PCL import_id
+            if ($pclImportId) {
+                KecamatanProgress::where('import_id', $pclImportId)->delete();
             }
 
-            // 2. Delete 2 latest monitoring_imports
-            MonitoringImport::whereIn('id', $latestImports)->delete();
-
-            // 3. Delete pcl_daily_submits with latest data_date
-            PclDailySubmit::where('data_date', $dataDate)->delete();
-
-            // 4. Delete pcl_progress with latest import_id
-            if ($latestImportId) {
-                PclProgress::where('import_id', $latestImportId)->delete();
+            // 3. Delete pcl_daily_submits with data_dates from the deleted imports
+            // Only delete if there are matching records that need cleanup
+            if (! empty($latestDataDates)) {
+                PclDailySubmit::whereIn('data_date', $latestDataDates)->delete();
             }
 
-            // 5. Delete pml_daily_submits with latest data_date
-            PmlDailySubmit::where('data_date', $dataDate)->delete();
+            // 4. Delete pcl_progress with the deleted PCL import_id
+            if ($pclImportId) {
+                PclProgress::where('import_id', $pclImportId)->delete();
+            }
 
-            // 6. Delete pml_progress with latest import_id
-            $latestPmlImportId = MonitoringImport::where('type', 'data_pml')
-                ->orderByDesc('id')
-                ->value('id');
-            if ($latestPmlImportId) {
-                PmlProgress::where('import_id', $latestPmlImportId)->delete();
+            // 5. Delete pml_daily_submits with data_dates from the deleted imports
+            if (! empty($latestDataDates)) {
+                PmlDailySubmit::whereIn('data_date', $latestDataDates)->delete();
+            }
+
+            // 6. Delete pml_progress with the deleted PML import_id
+            if ($pmlImportId) {
+                PmlProgress::where('import_id', $pmlImportId)->delete();
             }
 
             DB::commit();
@@ -633,15 +629,20 @@ class ImportController extends Controller
     /**
      * Calculate and store daily submit values for PCL leaderboard.
      *
-     * This calculates the difference between current import and previous import
-     * to get the daily submit value (since data is cumulative).
+     * This calculates the difference between current and previous import
+     * based on combined (submit + approve) value.
+     *
+     * Daily submit calculation rules (based on combined value):
+     * - Kondisi 1: (currentSubmit + currentApprove) > (previousSubmit + previousApprove)
+     *   → dailySubmit = (currentSubmit + currentApprove) - (previousSubmit + previousApprove)
+     * - Kondisi 2: (currentSubmit + currentApprove) < (previousSubmit + previousApprove)
+     *   → dailySubmit = 0
      */
-    private function calculateDailySubmits(string $dataDate): void
+    private function calculateDailySubmits(int $importId, string $dataDate): void
     {
-        // Get the latest import (highest id) for PCL data
-        $latestImport = MonitoringImport::where('type', 'data_pcl')
-            ->where('status', 'completed')
-            ->orderByDesc('id')
+        // Get the current import record
+        $latestImport = MonitoringImport::where('id', $importId)
+            ->where('type', 'data_pcl')
             ->first();
 
         if (! $latestImport) {
@@ -656,9 +657,9 @@ class ImportController extends Controller
             ->first();
 
         // Get current aggregated data by email from the latest import only
-        $currentData = PclProgress::where('data_date', $dataDate)
-            ->where('import_id', $latestImport->id)
-            ->selectRaw('email, name, SUM(submit) as submit')
+        // import_id alone is sufficient since each upload creates a new unique import_id
+        $currentData = PclProgress::where('import_id', $latestImport->id)
+            ->selectRaw('email, name, SUM(submit) as submit, SUM(approve) as approve, SUM(reject) as reject')
             ->groupBy('email', 'name')
             ->get()
             ->keyBy('email');
@@ -667,15 +668,14 @@ class ImportController extends Controller
         $previousData = collect();
         if ($previousImport) {
             $previousData = PclProgress::where('import_id', $previousImport->id)
-                ->selectRaw('email, name, SUM(submit) as submit')
+                ->selectRaw('email, name, SUM(submit) as submit, SUM(approve) as approve, SUM(reject) as reject')
                 ->groupBy('email', 'name')
                 ->get()
                 ->keyBy('email');
         }
 
         // Get kecamatans for each email from the latest import only
-        $kecamatanByEmail = PclProgress::where('data_date', $dataDate)
-            ->where('import_id', $latestImport->id)
+        $kecamatanByEmail = PclProgress::where('import_id', $latestImport->id)
             ->select('email', 'kecamatan')
             ->get()
             ->groupBy('email')
@@ -686,8 +686,23 @@ class ImportController extends Controller
         // Process each PCL
         foreach ($currentData as $email => $data) {
             $currentSubmit = $data->submit ?? 0;
+            $currentApprove = $data->approve ?? 0;
+            $currentCombined = $currentSubmit + $currentApprove;
             $previousSubmit = $previousData->get($email)?->submit ?? 0;
-            $dailySubmit = max(0, $currentSubmit - $previousSubmit);
+            $previousApprove = $previousData->get($email)?->approve ?? 0;
+            $previousCombined = $previousSubmit + $previousApprove;
+
+            // Calculate daily submit based on combined (submit + approve) value:
+            // Kondisi 1: (currentSubmit + currentApprove) > (previousSubmit + previousApprove)
+            //   → dailySubmit = (currentSubmit + currentApprove) - (previousSubmit + previousApprove)
+            // Kondisi 2: (currentSubmit + currentApprove) < (previousSubmit + previousApprove)
+            //   → dailySubmit = 0
+            if ($currentCombined > $previousCombined) {
+                $dailySubmit = $currentCombined - $previousCombined;
+            } else {
+                $dailySubmit = 0;
+            }
+
             $targetMet = $dailySubmit >= 10;
 
             $kecamatans = $kecamatanByEmail->get($email, []);
@@ -698,7 +713,7 @@ class ImportController extends Controller
                     'name' => $data->name,
                     'kecamatan' => $kecamatans,
                     'daily_submit' => $dailySubmit,
-                    'total_submit' => $currentSubmit,
+                    'total_submit' => $currentCombined,
                     'target_met' => $targetMet,
                 ]
             );
@@ -711,14 +726,11 @@ class ImportController extends Controller
      * Target threshold = 0.5 * 10 * pcl_count = 5 * pcl_count
      * PML meets target if daily_reject + daily_approve >= threshold
      *
-     * Daily reject calculation rules:
-     * - Kondisi 1: currentReject < previousReject → dailyReject = currentReject
-     * - Kondisi 2: currentReject > previousReject → dailyReject = currentReject - previousReject
-     * - Kondisi 3: currentReject = previousReject
-     *   - currentApprove = previousApprove → dailyReject = 0
-     *   - currentApprove ≠ previousApprove → dailyReject = currentReject
+     * Simplified calculation:
+     * - dailyApprove = currentApprove - previousApprove (minimum 0)
+     * - dailyReject = currentReject - previousReject (minimum 0)
      */
-    private function calculatePmlDailySubmits(string $dataDate): void
+    private function calculatePmlDailySubmits(int $importId, string $dataDate): void
     {
         // Get PCL count for each PML from pcl_pml mapping
         $pclCounts = PclPml::select('pml_email', DB::raw('COUNT(*) as count'))
@@ -726,10 +738,9 @@ class ImportController extends Controller
             ->pluck('count', 'pml_email')
             ->toArray();
 
-        // Get the latest import (highest id) for PML data
-        $latestImport = MonitoringImport::where('type', 'data_pml')
-            ->where('status', 'completed')
-            ->orderByDesc('id')
+        // Get the current import record
+        $latestImport = MonitoringImport::where('id', $importId)
+            ->where('type', 'data_pml')
             ->first();
 
         if (! $latestImport) {
@@ -744,8 +755,8 @@ class ImportController extends Controller
             ->first();
 
         // Get current aggregated data by email from the latest import only
-        $currentData = PmlProgress::where('data_date', $dataDate)
-            ->where('import_id', $latestImport->id)
+        // import_id alone is sufficient since each upload creates a new unique import_id
+        $currentData = PmlProgress::where('import_id', $latestImport->id)
             ->selectRaw('email, name, SUM(reject) as reject, SUM(approve) as approve')
             ->groupBy('email', 'name')
             ->get()
@@ -768,26 +779,11 @@ class ImportController extends Controller
             $previousReject = $previousData->get($email)?->reject ?? 0;
             $previousApprove = $previousData->get($email)?->approve ?? 0;
 
-            // Calculate daily reject based on conditions:
-            // Kondisi 1: currentReject < previousReject → dailyReject = currentReject
-            // Kondisi 2: currentReject > previousReject → dailyReject = currentReject - previousReject
-            // Kondisi 3: currentReject = previousReject
-            //   a. currentApprove = previousApprove → dailyReject = 0
-            //   b. currentApprove ≠ previousApprove → dailyReject = currentReject
-            if ($currentReject < $previousReject) {
-                $dailyReject = $currentReject;
-            } elseif ($currentReject > $previousReject) {
-                $dailyReject = $currentReject - $previousReject;
-            } else {
-                // currentReject == previousReject
-                if ($currentApprove === $previousApprove) {
-                    $dailyReject = 0;
-                } else {
-                    $dailyReject = $currentReject;
-                }
-            }
-
+            // Simplified calculation:
+            // dailyApprove = currentApprove - previousApprove
+            // dailyReject = currentReject - previousApprove (minimum 0)
             $dailyApprove = max(0, $currentApprove - $previousApprove);
+            $dailyReject = max(0, $currentReject - $previousReject);
             $dailyCombined = $dailyReject + $dailyApprove;
 
             $pclCount = $pclCounts[$email] ?? 0;

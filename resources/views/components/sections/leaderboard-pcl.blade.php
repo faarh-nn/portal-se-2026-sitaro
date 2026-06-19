@@ -84,10 +84,6 @@
                         <span class="leaderboard-pcl__stat-value">{{ $rank2['daily_submit'] }}</span>
                         <span class="leaderboard-pcl__stat-label">Hari Ini</span>
                     </div>
-                    <div class="leaderboard-pcl__stat">
-                        <span class="leaderboard-pcl__stat-value">{{ $rank2['total_submit'] }}</span>
-                        <span class="leaderboard-pcl__stat-label">Total</span>
-                    </div>
                 </div>
                 <div class="leaderboard-pcl__target-badge {{ $rank2['target_met'] ? 'leaderboard-pcl__target-badge--met' : 'leaderboard-pcl__target-badge--not-met' }}">
                     {{ $rank2['target_met'] ? 'Target Terpenuhi' : 'Belum Target' }}
@@ -119,10 +115,6 @@
                         <span class="leaderboard-pcl__stat-value leaderboard-pcl__stat-value--lg">{{ $rank1['daily_submit'] }}</span>
                         <span class="leaderboard-pcl__stat-label">Hari Ini</span>
                     </div>
-                    <div class="leaderboard-pcl__stat">
-                        <span class="leaderboard-pcl__stat-value leaderboard-pcl__stat-value--lg">{{ $rank1['total_submit'] }}</span>
-                        <span class="leaderboard-pcl__stat-label">Total</span>
-                    </div>
                 </div>
                 <div class="leaderboard-pcl__target-badge {{ $rank1['target_met'] ? 'leaderboard-pcl__target-badge--met' : 'leaderboard-pcl__target-badge--not-met' }}">
                     {{ $rank1['target_met'] ? 'Target Terpenuhi' : 'Belum Target' }}
@@ -148,10 +140,6 @@
                     <div class="leaderboard-pcl__stat">
                         <span class="leaderboard-pcl__stat-value">{{ $rank3['daily_submit'] }}</span>
                         <span class="leaderboard-pcl__stat-label">Hari Ini</span>
-                    </div>
-                    <div class="leaderboard-pcl__stat">
-                        <span class="leaderboard-pcl__stat-value">{{ $rank3['total_submit'] }}</span>
-                        <span class="leaderboard-pcl__stat-label">Total</span>
                     </div>
                 </div>
                 <div class="leaderboard-pcl__target-badge {{ $rank3['target_met'] ? 'leaderboard-pcl__target-badge--met' : 'leaderboard-pcl__target-badge--not-met' }}">
