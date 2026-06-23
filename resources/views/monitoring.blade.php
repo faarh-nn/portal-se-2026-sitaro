@@ -46,10 +46,11 @@
     </div>
 
     <div class="monitoring-section__container">
+        <x-sections.stats-overview :overallProgress="$overallProgress" :totalTarget="$totalTarget" :totalCompleted="$totalCompleted" />
         <x-sections.leaderboard-pcl :leaderboardData="$leaderboardData" :leaderboardDataPaginated="$leaderboardDataPaginated" :leaderboardLastUpdate="$leaderboardLastUpdate" />
         <x-sections.leaderboard-pml :pmlLeaderboardData="$pmlLeaderboardData" :pmlLeaderboardDataPaginated="$pmlLeaderboardDataPaginated" :pmlLeaderboardLastUpdate="$pmlLeaderboardLastUpdate" />
-        <x-sections.progress-pcl :pclData="$pclData" :pclTotals="$pclTotals" :pclDataPaginated="$pclDataPaginated" :pmlList="$pmlList" :lastUpdate="$lastUpdate" />
-        <x-sections.progress-pml :pmlData="$pmlData" :pmlTotals="$pmlTotals" :lastUpdate="$lastUpdate" />
+        <x-sections.progress-pcl :pclData="$pclData" :pclTotals="$pclTotals" :pclDataPaginated="$pclDataPaginated" :pmlList="$pmlList" :pclLastUpdate="$pclLastUpdate" />
+        <x-sections.progress-pml :pmlData="$pmlData" :pmlTotals="$pmlTotals" :pmlLastUpdate="$pmlLastUpdate" />
     </div>
 
     <x-sections.map-kecamatan
@@ -60,7 +61,7 @@
     />
 
     <div class="monitoring-section__container">
-        <x-sections.table-kecamatan :progressData="$progressData" :lastUpdate="$lastUpdate" />
+        <x-sections.table-kecamatan :progressData="$progressData" :pclLastUpdate="$pclLastUpdate" />
     </div>
 
     <x-partials.footer />

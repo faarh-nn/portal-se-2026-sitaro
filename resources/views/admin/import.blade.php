@@ -215,6 +215,50 @@
                 </form>
             </div>
 
+            {{-- Assignment History Section --}}
+            <div class="admin-import-section">
+                <div class="admin-import-section__header">
+                    <h3 class="admin-import-section__title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Data History Assignment
+                    </h3>
+                    <form action="{{ route('admin.import.clear-assignment-history') }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus seluruh data history assignment?');">
+                        @csrf
+                        <button type="submit" class="btn-danger-pill">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Hapus Data History
+                        </button>
+                    </form>
+                </div>
+                <p class="admin-import-section__desc">
+                    Upload file data history assignment untuk menghitung daily submit PCL dan PML.
+                    <br>
+                    <strong>Perhitungan Daily Submit:</strong>
+                    <br>• <strong>PCL:</strong> Jumlah status mengandung "SUBMITTED" dalam range 1 hari terakhir
+                    <br>• <strong>PML:</strong> Jumlah status mengandung "REJECT/REVOKE" + "APPROVE" dalam range 1 hari terakhir
+                </p>
+
+                <form action="{{ route('admin.import.assignment-history') }}" method="POST" enctype="multipart/form-data" class="admin-import-form">
+                    @csrf
+                    <div class="admin-form-group">
+                        <div class="admin-form-input-group">
+                            <input type="file" name="file_assignment_history" accept=".xlsx,.xls" class="admin-form-file" required>
+                            <button type="submit" class="btn-primary-pill">Upload</button>
+                        </div>
+                        <span class="admin-form-hint">
+                            Format: Kolom A = Email PML, Kolom B = Role PML, Kolom C = Email PCL, Kolom D = Role PCL,
+                            Kolom E onwards = History_Status & History_Tanggal
+                        </span>
+                    </div>
+                </form>
+            </div>
+
             {{-- Import History --}}
             <div class="admin-history">
                 <h3 class="admin-history__title">Riwayat Import</h3>

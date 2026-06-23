@@ -50,8 +50,27 @@
                 }
                 $conditionText = $importedAt->format('j F Y H:i') . ' WITA';
             @endphp
-            <div class="leaderboard-pcl__last-update-badge">
-                Leaderboard {{ $dayName }} kondisi {{ $conditionText }}
+            <div class="leaderboard-pcl__last-update-badge-wrapper" x-data="{ showTooltip: false }">
+                <div class="leaderboard-pcl__last-update-badge" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false">
+                    Leaderboard {{ $dayName }} kondisi {{ $conditionText }}
+                </div>
+                <div class="leaderboard-pcl__tooltip"
+                     x-show="showTooltip"
+                     x-transition:enter="leaderboard-transition-enter"
+                     x-transition:enter-start="leaderboard-transition-enter-start"
+                     x-transition:enter-end="leaderboard-transition-enter-end"
+                     x-transition:leave="leaderboard-transition-leave"
+                     x-transition:leave-start="leaderboard-transition-leave-start"
+                     x-transition:leave-end="leaderboard-transition-leave-end">
+                    <div class="leaderboard-pcl__tooltip-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                    </div>
+                    <span>Data Leaderboard dan Target Harian akan di-update secara berkala sekali sehari setiap pukul 7.00 WITA</span>
+                </div>
             </div>
         @endif
     </div>
@@ -189,8 +208,25 @@
             <div class="leaderboard-pcl__table-meta">
                 <span class="leaderboard-pcl__table-count">{{ $leaderboardDataPaginated->total() }} PCL</span>
                 @if($leaderboardLastUpdate)
-                    <span class="leaderboard-pcl__table-last-update">
-                        Kondisi {{ $leaderboardLastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
+                    <span class="leaderboard-pcl__table-last-update-wrapper" x-data="{ showTooltip: false }">
+                        <span class="leaderboard-pcl__table-last-update" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false">
+                            Kondisi {{ $leaderboardLastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
+                        </span>
+                        <span class="leaderboard-pcl__table-last-update-tooltip"
+                              x-show="showTooltip"
+                              x-transition:enter="leaderboard-transition-enter"
+                              x-transition:enter-start="leaderboard-transition-enter-start"
+                              x-transition:enter-end="leaderboard-transition-enter-end"
+                              x-transition:leave="leaderboard-transition-leave"
+                              x-transition:leave-start="leaderboard-transition-leave-start"
+                              x-transition:leave-end="leaderboard-transition-leave-end">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span>Data Leaderboard dan Target Harian akan di-update secara berkala sekali sehari setiap pukul 7.00 WITA</span>
+                        </span>
                     </span>
                 @endif
             </div>

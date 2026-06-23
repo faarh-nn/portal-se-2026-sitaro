@@ -158,8 +158,9 @@ class MonitoringController extends Controller
         );
 
         // Get latest leaderboard data from pcl_daily_submits
+        // Use assignment_history import for last update timestamp
         $latestDataDate = PclDailySubmit::orderByDesc('data_date')->value('data_date');
-        $leaderboardLastUpdate = $latestDataDate ? MonitoringImport::where('type', 'data_pcl')
+        $leaderboardLastUpdate = $latestDataDate ? MonitoringImport::where('type', 'assignment_history')
             ->where('status', 'completed')
             ->whereDate('imported_at', '<=', $latestDataDate)
             ->orderBy('imported_at', 'desc')
@@ -200,8 +201,9 @@ class MonitoringController extends Controller
         }
 
         // Get latest PML leaderboard data from pml_daily_submits
+        // Use assignment_history import for last update timestamp
         $latestPmlDataDate = PmlDailySubmit::orderByDesc('data_date')->value('data_date');
-        $pmlLeaderboardLastUpdate = $latestPmlDataDate ? MonitoringImport::where('type', 'data_pml')
+        $pmlLeaderboardLastUpdate = $latestPmlDataDate ? MonitoringImport::where('type', 'assignment_history')
             ->where('status', 'completed')
             ->whereDate('imported_at', '<=', $latestPmlDataDate)
             ->orderBy('imported_at', 'desc')
@@ -243,8 +245,15 @@ class MonitoringController extends Controller
             $pmlLeaderboardDataPaginated = new LengthAwarePaginator([], 0, 5, 1, ['path' => route('monitoring')]);
         }
 
-        // Get last update timestamp from completed imports
-        $lastUpdate = MonitoringImport::where('status', 'completed')
+        // Get last update timestamp from completed imports for PML
+        $pmlLastUpdate = MonitoringImport::where('type', 'data_pml')
+            ->where('status', 'completed')
+            ->orderBy('imported_at', 'desc')
+            ->first();
+
+        // Get last update timestamp from completed imports for PCL
+        $pclLastUpdate = MonitoringImport::where('type', 'data_pcl')
+            ->where('status', 'completed')
             ->orderBy('imported_at', 'desc')
             ->first();
 
@@ -259,7 +268,8 @@ class MonitoringController extends Controller
             'pclTotals',
             'pclDataPaginated',
             'pmlList',
-            'lastUpdate',
+            'pmlLastUpdate',
+            'pclLastUpdate',
             'leaderboardData',
             'leaderboardDataPaginated',
             'leaderboardLastUpdate',

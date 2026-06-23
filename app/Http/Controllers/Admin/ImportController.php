@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AssignmentHistoryStatus;
+use App\Models\AssignmentHistoryStatusItem;
 use App\Models\KecamatanMapping;
 use App\Models\KecamatanProgress;
 use App\Models\MonitoringImport;
@@ -14,11 +16,13 @@ use App\Models\PclTotalAssignment;
 use App\Models\PmlDailySubmit;
 use App\Models\PmlProgress;
 use App\Models\PmlTotalAssignment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class ImportController extends Controller
 {
@@ -198,13 +202,9 @@ class ImportController extends Controller
                 $count = $this->processPmlData($request->file('file_pml'), $pmlImport, $dataDate);
                 $pmlImport->markCompleted($count);
                 $totalRows += $count;
-
-                // Calculate and store daily submits for PML leaderboard
-                $this->calculatePmlDailySubmits($pmlImport->id, $dataDate);
             }
 
             // Import PCL data
-            $pclImport = null;
             if ($request->hasFile('file_pcl')) {
                 $pclImport = MonitoringImport::create([
                     'file_name' => $request->file('file_pcl')->getClientOriginalName(),
@@ -217,14 +217,9 @@ class ImportController extends Controller
                 $count = $this->processPclData($request->file('file_pcl'), $pclImport, $dataDate);
                 $pclImport->markCompleted($count);
                 $totalRows += $count;
-            }
 
-            // Generate kecamatan progress from PCL data (only if PCL was imported)
-            if ($pclImport) {
+                // Generate kecamatan progress from PCL data
                 $this->generateKecamatanProgress($pclImport->id, $dataDate);
-
-                // Calculate and store daily submits for PCL leaderboard
-                $this->calculateDailySubmits($pclImport->id, $dataDate);
             }
 
             DB::commit();
@@ -627,93 +622,309 @@ class ImportController extends Controller
     }
 
     /**
-     * Calculate and store daily submit values for PCL leaderboard.
-     *
-     * This calculates the difference between current and previous import
-     * based on combined (submit + approve) value.
-     *
-     * Daily submit calculation rules (based on combined value):
-     * - Kondisi 1: (currentSubmit + currentApprove) > (previousSubmit + previousApprove)
-     *   → dailySubmit = (currentSubmit + currentApprove) - (previousSubmit + previousApprove)
-     * - Kondisi 2: (currentSubmit + currentApprove) < (previousSubmit + previousApprove)
-     *   → dailySubmit = 0
+     * Import assignment history status from Excel.
      */
-    private function calculateDailySubmits(int $importId, string $dataDate): void
+    public function importAssignmentHistory(Request $request)
     {
-        // Get the current import record
-        $latestImport = MonitoringImport::where('id', $importId)
-            ->where('type', 'data_pcl')
-            ->first();
+        $request->validate([
+            'file_assignment_history' => 'required|file|mimes:xlsx,xls|max:10240',
+        ]);
 
-        if (! $latestImport) {
+        $import = MonitoringImport::create([
+            'file_name' => $request->file('file_assignment_history')->getClientOriginalName(),
+            'type' => 'assignment_history',
+            'status' => 'processing',
+            'imported_by' => auth()->id(),
+            'imported_at' => now(),
+        ]);
+
+        try {
+            $file = $request->file('file_assignment_history');
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+
+            $count = 0;
+            $importedAt = now();
+
+            // Process each row (skip header)
+            foreach (array_slice($rows, 1) as $row) {
+                // Check if pml_email (col 0) and pcl_email (col 2) exist
+                if (empty($row[0]) || empty($row[2])) {
+                    continue;
+                }
+
+                $pmlEmail = strtolower(trim($row[0]));
+                $pclEmail = strtolower(trim($row[2]));
+
+                // Create assignment history status record
+                $assignment = AssignmentHistoryStatus::create([
+                    'pml_email' => $pmlEmail,
+                    'pcl_email' => $pclEmail,
+                    'import_id' => $import->id,
+                    'imported_at' => $importedAt,
+                ]);
+
+                // Collect all history status items from columns 4 onwards
+                // Format: History_1_Status (col 4), History_1_Tanggal (col 5), History_2_Status (col 6), etc.
+                $historyColumns = array_slice($row, 4);
+                $historyItems = [];
+                $i = 0;
+
+                while ($i < count($historyColumns) - 1) {
+                    $status = trim((string) ($historyColumns[$i] ?? ''));
+                    $tanggalRaw = trim((string) ($historyColumns[$i + 1] ?? ''));
+
+                    if (! empty($status) && ! empty($tanggalRaw)) {
+                        $historyItems[] = [
+                            'status' => $status,
+                            'tanggal' => $this->parseDateTime($tanggalRaw),
+                        ];
+                    }
+
+                    $i += 2;
+                }
+
+                // Bulk insert history status items
+                foreach ($historyItems as $item) {
+                    AssignmentHistoryStatusItem::create([
+                        'assignment_history_status_id' => $assignment->id,
+                        'status' => $item['status'],
+                        'tanggal' => $item['tanggal'],
+                    ]);
+                }
+
+                $count++;
+            }
+
+            $import->markCompleted($count);
+
+            // Calculate daily submits based on the new history data
+            $this->calculateDailySubmitsFromHistory($import->id, $importedAt);
+
+            return redirect()->back()->with('success', "Berhasil import {$count} data history assignment.");
+        } catch (\Exception $e) {
+            Log::error('Assignment history import failed', [
+                'import_id' => $import->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $import->markFailed($e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal import: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Parse datetime string from Excel format.
+     */
+    private function parseDateTime(string $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        // Try parsing as datetime string first
+        try {
+            return Carbon::parse($value)->format('Y-m-d H:i:s');
+        } catch (\Exception $e) {
+            // If it fails, try Excel serial date format
+            if (is_numeric($value)) {
+                try {
+                    return Date::excelToDateTimeObject($value)
+                        ->format('Y-m-d H:i:s');
+                } catch (\Exception $e2) {
+                    return null;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * Calculate daily submits for PCL and PML from assignment history data.
+     *
+     * Daily Submit PCL: Count of history statuses containing "SUBMITTED" within 1-day range
+     * Daily Submit PML: Count of history statuses containing "REJECT" or "REVOKE" (reject daily)
+     *                   + Count of history statuses containing "APPROVE" (approve daily)
+     */
+    private function calculateDailySubmitsFromHistory(int $importId, $importedAt): void
+    {
+        // Define the 1-day range: from (imported_at - 1 day) to imported_at
+        $rangeStart = $importedAt->copy()->subDay();
+        $rangeEnd = $importedAt->copy();
+
+        // Get officer names
+        $officerNames = OfficerMapping::pluck('name', 'email')->toArray();
+
+        // Get PCL counts per PML from pcl_pml mapping
+        $pclCounts = PclPml::select('pml_email', DB::raw('COUNT(*) as count'))
+            ->groupBy('pml_email')
+            ->pluck('count', 'pml_email')
+            ->toArray();
+
+        // Calculate PCL daily submits
+        $this->calculatePclDailySubmitsFromHistory(
+            $importId,
+            $rangeStart,
+            $rangeEnd,
+            $officerNames
+        );
+
+        // Calculate PML daily submits
+        $this->calculatePmlDailySubmitsFromHistory(
+            $importId,
+            $rangeStart,
+            $rangeEnd,
+            $officerNames,
+            $pclCounts
+        );
+    }
+
+    /**
+     * Calculate daily submits for PCL from assignment history.
+     */
+    private function calculatePclDailySubmitsFromHistory(
+        int $importId,
+        $rangeStart,
+        $rangeEnd,
+        array $officerNames
+    ): void {
+        // Get all assignment history records for this import
+        $assignmentIds = AssignmentHistoryStatus::where('import_id', $importId)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($assignmentIds)) {
             return;
         }
 
-        // Get the immediately previous import (highest id less than latest)
-        $previousImport = MonitoringImport::where('type', 'data_pcl')
-            ->where('status', 'completed')
-            ->where('id', '<', $latestImport->id)
-            ->orderByDesc('id')
-            ->first();
+        // Get all unique PCL emails from assignment history
+        $allPclEmails = AssignmentHistoryStatus::where('import_id', $importId)
+            ->distinct()
+            ->pluck('pcl_email')
+            ->toArray();
 
-        // Get current aggregated data by email from the latest import only
-        // import_id alone is sufficient since each upload creates a new unique import_id
-        $currentData = PclProgress::where('import_id', $latestImport->id)
-            ->selectRaw('email, name, SUM(submit) as submit, SUM(approve) as approve, SUM(reject) as reject')
-            ->groupBy('email', 'name')
+        // Count SUBMITTED statuses within the range for each PCL
+        $pclDailyCounts = DB::table('assignment_history_status_items')
+            ->join('assignment_history_statuses', 'assignment_history_status_items.assignment_history_status_id', '=', 'assignment_history_statuses.id')
+            ->whereIn('assignment_history_statuses.id', $assignmentIds)
+            ->whereBetween('assignment_history_status_items.tanggal', [$rangeStart, $rangeEnd])
+            ->where(function ($query) {
+                $query->where('assignment_history_status_items.status', 'LIKE', '%SUBMITTED%')
+                    ->orWhere('assignment_history_status_items.status', 'LIKE', '%submitted%');
+            })
+            ->groupBy('assignment_history_statuses.pcl_email')
+            ->select('assignment_history_statuses.pcl_email', DB::raw('COUNT(*) as submit_count'))
             ->get()
-            ->keyBy('email');
+            ->pluck('submit_count', 'pcl_email');
 
-        // Get previous aggregated data by email from the immediately previous import only
-        $previousData = collect();
-        if ($previousImport) {
-            $previousData = PclProgress::where('import_id', $previousImport->id)
-                ->selectRaw('email, name, SUM(submit) as submit, SUM(approve) as approve, SUM(reject) as reject')
-                ->groupBy('email', 'name')
-                ->get()
-                ->keyBy('email');
-        }
-
-        // Get kecamatans for each email from the latest import only
-        $kecamatanByEmail = PclProgress::where('import_id', $latestImport->id)
-            ->select('email', 'kecamatan')
+        // Get kecamatans for each PCL from existing data
+        $kecamatanByEmail = PclProgress::select('email', 'kecamatan')
+            ->distinct()
             ->get()
             ->groupBy('email')
-            ->map(function ($items) {
-                return $items->pluck('kecamatan')->filter()->unique()->values()->toArray();
-            });
+            ->map(fn ($items) => $items->pluck('kecamatan')->filter()->unique()->values()->toArray());
 
-        // Process each PCL
-        foreach ($currentData as $email => $data) {
-            $currentSubmit = $data->submit ?? 0;
-            $currentApprove = $data->approve ?? 0;
-            $currentCombined = $currentSubmit + $currentApprove;
-            $previousSubmit = $previousData->get($email)?->submit ?? 0;
-            $previousApprove = $previousData->get($email)?->approve ?? 0;
-            $previousCombined = $previousSubmit + $previousApprove;
-
-            // Calculate daily submit based on combined (submit + approve) value:
-            // Kondisi 1: (currentSubmit + currentApprove) > (previousSubmit + previousApprove)
-            //   → dailySubmit = (currentSubmit + currentApprove) - (previousSubmit + previousApprove)
-            // Kondisi 2: (currentSubmit + currentApprove) < (previousSubmit + previousApprove)
-            //   → dailySubmit = 0
-            if ($currentCombined > $previousCombined) {
-                $dailySubmit = $currentCombined - $previousCombined;
-            } else {
-                $dailySubmit = 0;
-            }
-
-            $targetMet = $dailySubmit >= 10;
-
-            $kecamatans = $kecamatanByEmail->get($email, []);
+        // Save PCL daily submits - iterate ALL PCL emails, including those with 0 submit
+        $dataDate = now()->format('Y-m-d');
+        foreach ($allPclEmails as $pclEmail) {
+            $pclEmailLower = strtolower($pclEmail);
+            $dailySubmit = $pclDailyCounts[$pclEmailLower] ?? 0;
+            $kecamatans = $kecamatanByEmail->get($pclEmailLower, []);
 
             PclDailySubmit::updateOrCreate(
-                ['email' => $email, 'data_date' => $dataDate],
+                ['email' => $pclEmailLower, 'data_date' => $dataDate],
                 [
-                    'name' => $data->name,
+                    'name' => $officerNames[$pclEmailLower] ?? null,
                     'kecamatan' => $kecamatans,
                     'daily_submit' => $dailySubmit,
-                    'total_submit' => $currentCombined,
+                    'total_submit' => $dailySubmit,
+                    'target_met' => $dailySubmit >= 10,
+                ]
+            );
+        }
+    }
+
+    /**
+     * Calculate daily submits for PML from assignment history.
+     */
+    private function calculatePmlDailySubmitsFromHistory(
+        int $importId,
+        $rangeStart,
+        $rangeEnd,
+        array $officerNames,
+        array $pclCounts
+    ): void {
+        // Get all assignment history records for this import
+        $assignmentIds = AssignmentHistoryStatus::where('import_id', $importId)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($assignmentIds)) {
+            return;
+        }
+
+        // Count REJECT/REVOKE statuses within the range for each PML
+        $pmlRejectCounts = DB::table('assignment_history_status_items')
+            ->join('assignment_history_statuses', 'assignment_history_status_items.assignment_history_status_id', '=', 'assignment_history_statuses.id')
+            ->whereIn('assignment_history_statuses.id', $assignmentIds)
+            ->whereBetween('assignment_history_status_items.tanggal', [$rangeStart, $rangeEnd])
+            ->where(function ($query) {
+                $query->where('assignment_history_status_items.status', 'LIKE', '%REJECT%')
+                    ->orWhere('assignment_history_status_items.status', 'LIKE', '%reject%')
+                    ->orWhere('assignment_history_status_items.status', 'LIKE', '%REVOKE%')
+                    ->orWhere('assignment_history_status_items.status', 'LIKE', '%revoke%');
+            })
+            ->groupBy('assignment_history_statuses.pml_email')
+            ->select('assignment_history_statuses.pml_email', DB::raw('COUNT(*) as reject_count'))
+            ->get()
+            ->pluck('reject_count', 'pml_email');
+
+        // Count APPROVE statuses within the range for each PML
+        $pmlApproveCounts = DB::table('assignment_history_status_items')
+            ->join('assignment_history_statuses', 'assignment_history_status_items.assignment_history_status_id', '=', 'assignment_history_statuses.id')
+            ->whereIn('assignment_history_statuses.id', $assignmentIds)
+            ->whereBetween('assignment_history_status_items.tanggal', [$rangeStart, $rangeEnd])
+            ->where(function ($query) {
+                $query->where('assignment_history_status_items.status', 'LIKE', '%APPROVE%')
+                    ->orWhere('assignment_history_status_items.status', 'LIKE', '%approve%');
+            })
+            ->groupBy('assignment_history_statuses.pml_email')
+            ->select('assignment_history_statuses.pml_email', DB::raw('COUNT(*) as approve_count'))
+            ->get()
+            ->pluck('approve_count', 'pml_email');
+
+        // Get all PML emails from the history data
+        $allPmlEmails = AssignmentHistoryStatus::where('import_id', $importId)
+            ->distinct()
+            ->pluck('pml_email')
+            ->toArray();
+
+        // Combine and save PML daily submits
+        $dataDate = now()->format('Y-m-d');
+        foreach ($allPmlEmails as $pmlEmail) {
+            $pmlEmailLower = strtolower($pmlEmail);
+            $dailyReject = $pmlRejectCounts[$pmlEmail] ?? $pmlRejectCounts[$pmlEmailLower] ?? 0;
+            $dailyApprove = $pmlApproveCounts[$pmlEmail] ?? $pmlApproveCounts[$pmlEmailLower] ?? 0;
+            $dailyCombined = $dailyReject + $dailyApprove;
+
+            $pclCount = $pclCounts[$pmlEmailLower] ?? 0;
+            $targetThreshold = 5 * $pclCount;
+            $targetMet = $pclCount > 0 && $dailyCombined >= $targetThreshold;
+
+            PmlDailySubmit::updateOrCreate(
+                ['email' => $pmlEmailLower, 'data_date' => $dataDate],
+                [
+                    'name' => $officerNames[$pmlEmailLower] ?? null,
+                    'daily_reject' => $dailyReject,
+                    'daily_approve' => $dailyApprove,
+                    'daily_combined' => $dailyCombined,
+                    'total_reject' => $dailyReject,
+                    'total_approve' => $dailyApprove,
+                    'pcl_count' => $pclCount,
                     'target_met' => $targetMet,
                 ]
             );
@@ -721,88 +932,33 @@ class ImportController extends Controller
     }
 
     /**
-     * Calculate and store daily reject+approve values for PML leaderboard.
-     *
-     * Target threshold = 0.5 * 10 * pcl_count = 5 * pcl_count
-     * PML meets target if daily_reject + daily_approve >= threshold
-     *
-     * Simplified calculation:
-     * - dailyApprove = currentApprove - previousApprove (minimum 0)
-     * - dailyReject = currentReject - previousReject (minimum 0)
+     * Clear assignment history data.
      */
-    private function calculatePmlDailySubmits(int $importId, string $dataDate): void
+    public function clearAssignmentHistoryData(Request $request)
     {
-        // Get PCL count for each PML from pcl_pml mapping
-        $pclCounts = PclPml::select('pml_email', DB::raw('COUNT(*) as count'))
-            ->groupBy('pml_email')
-            ->pluck('count', 'pml_email')
-            ->toArray();
-
-        // Get the current import record
-        $latestImport = MonitoringImport::where('id', $importId)
-            ->where('type', 'data_pml')
-            ->first();
-
-        if (! $latestImport) {
-            return;
+        if (! auth()->user()->isAdmin()) {
+            abort(403);
         }
 
-        // Get the immediately previous import (highest id less than latest)
-        $previousImport = MonitoringImport::where('type', 'data_pml')
-            ->where('status', 'completed')
-            ->where('id', '<', $latestImport->id)
-            ->orderByDesc('id')
-            ->first();
+        DB::beginTransaction();
 
-        // Get current aggregated data by email from the latest import only
-        // import_id alone is sufficient since each upload creates a new unique import_id
-        $currentData = PmlProgress::where('import_id', $latestImport->id)
-            ->selectRaw('email, name, SUM(reject) as reject, SUM(approve) as approve')
-            ->groupBy('email', 'name')
-            ->get()
-            ->keyBy('email');
+        try {
+            // Delete monitoring_imports records with type 'assignment_history'
+            // This will cascade delete related assignment_history_statuses and items
+            // due to foreign key constraints
+            $deletedCount = MonitoringImport::where('type', 'assignment_history')->delete();
 
-        // Get previous aggregated data by email from the immediately previous import only
-        $previousData = collect();
-        if ($previousImport) {
-            $previousData = PmlProgress::where('import_id', $previousImport->id)
-                ->selectRaw('email, name, SUM(reject) as reject, SUM(approve) as approve')
-                ->groupBy('email', 'name')
-                ->get()
-                ->keyBy('email');
-        }
+            // Also truncate any orphaned records (just in case)
+            AssignmentHistoryStatusItem::truncate();
+            AssignmentHistoryStatus::truncate();
 
-        // Process each PML
-        foreach ($currentData as $email => $data) {
-            $currentReject = $data->reject ?? 0;
-            $currentApprove = $data->approve ?? 0;
-            $previousReject = $previousData->get($email)?->reject ?? 0;
-            $previousApprove = $previousData->get($email)?->approve ?? 0;
+            DB::commit();
 
-            // Simplified calculation:
-            // dailyApprove = currentApprove - previousApprove
-            // dailyReject = currentReject - previousApprove (minimum 0)
-            $dailyApprove = max(0, $currentApprove - $previousApprove);
-            $dailyReject = max(0, $currentReject - $previousReject);
-            $dailyCombined = $dailyReject + $dailyApprove;
+            return redirect()->back()->with('success', "Data history assignment berhasil dihapus ({$deletedCount} file).");
+        } catch (\Exception $e) {
+            DB::rollBack();
 
-            $pclCount = $pclCounts[$email] ?? 0;
-            $targetThreshold = 5 * $pclCount;
-            $targetMet = $pclCount > 0 && $dailyCombined >= $targetThreshold;
-
-            PmlDailySubmit::updateOrCreate(
-                ['email' => $email, 'data_date' => $dataDate],
-                [
-                    'name' => $data->name,
-                    'daily_reject' => $dailyReject,
-                    'daily_approve' => $dailyApprove,
-                    'daily_combined' => $dailyCombined,
-                    'total_reject' => $currentReject,
-                    'total_approve' => $currentApprove,
-                    'pcl_count' => $pclCount,
-                    'target_met' => $targetMet,
-                ]
-            );
+            return redirect()->back()->with('error', 'Gagal menghapus data: '.$e->getMessage());
         }
     }
 }

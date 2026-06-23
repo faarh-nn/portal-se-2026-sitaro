@@ -37,4 +37,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/import/clear-leaderboard', [ImportController::class, 'clearLeaderboardData'])->name('import.clear-leaderboard');
     Route::post('/import/pcl-pml', [ImportController::class, 'importPclPmlMapping'])->name('import.pcl-pml');
     Route::post('/import/clear-pcl-pml', [ImportController::class, 'clearPclPmlData'])->name('import.clear-pcl-pml');
+    Route::post('/import/assignment-history', [ImportController::class, 'importAssignmentHistory'])->name('import.assignment-history');
+    Route::post('/import/clear-assignment-history', [ImportController::class, 'clearAssignmentHistoryData'])->name('import.clear-assignment-history');
 });
