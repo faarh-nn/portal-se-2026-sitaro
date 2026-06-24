@@ -1,5 +1,73 @@
 <section class="stats-overview">
     <div class="stats-overview__card">
+        @if($lastUpdate)
+            @php
+                $importedAt = $lastUpdate->imported_at->setTimezone('Asia/Makassar');
+                $hour = (int) $importedAt->format('H');
+                $importedAtYesterday = $importedAt->copy()->subDay();
+                $dayName = '';
+                if ($hour >= 5 && $hour < 8) {
+                    // 5 pagi WITA - 8 pagi WITA → nama hari kemarin
+                    $dayName = match ($importedAtYesterday->format('l')) {
+                        'Monday' => 'Senin',
+                        'Tuesday' => 'Selasa',
+                        'Wednesday' => 'Rabu',
+                        'Thursday' => 'Kamis',
+                        'Friday' => 'Jumat',
+                        'Saturday' => 'Sabtu',
+                        'Sunday' => 'Minggu',
+                        default => $importedAtYesterday->format('j F Y'),
+                    };
+                } elseif ($hour >= 19 && $hour <= 21) {
+                    // 7 malam WITA - 9 malam WITA → nama hari sesuai last update
+                    $dayName = match ($importedAt->format('l')) {
+                        'Monday' => 'Senin',
+                        'Tuesday' => 'Selasa',
+                        'Wednesday' => 'Rabu',
+                        'Thursday' => 'Kamis',
+                        'Friday' => 'Jumat',
+                        'Saturday' => 'Sabtu',
+                        'Sunday' => 'Minggu',
+                        default => $importedAt->format('j F Y'),
+                    };
+                } else {
+                    // Fallback: tampilkan nama hari sesuai last update untuk jam lain
+                    $dayName = match ($importedAt->format('l')) {
+                        'Monday' => 'Senin',
+                        'Tuesday' => 'Selasa',
+                        'Wednesday' => 'Rabu',
+                        'Thursday' => 'Kamis',
+                        'Friday' => 'Jumat',
+                        'Saturday' => 'Sabtu',
+                        'Sunday' => 'Minggu',
+                        default => $importedAt->format('j F Y'),
+                    };
+                }
+                $conditionText = $importedAt->format('j F Y H:i') . ' WITA';
+            @endphp
+            <div class="stats-overview__last-update-badge-wrapper" x-data="{ showTooltip: false }">
+                <div class="stats-overview__last-update-badge" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false">
+                    Data {{ $dayName }} kondisi {{ $conditionText }}
+                </div>
+                <div class="stats-overview__tooltip"
+                     x-show="showTooltip"
+                     x-transition:enter="stats-tooltip-enter-active"
+                     x-transition:enter-start="stats-tooltip-enter-from"
+                     x-transition:enter-end="stats-tooltip-enter-to"
+                     x-transition:leave="stats-tooltip-leave-active"
+                     x-transition:leave-start="stats-tooltip-leave-from"
+                     x-transition:leave-end="stats-tooltip-leave-to">
+                    <div class="stats-overview__tooltip-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                    </div>
+                    <span>Data progress PCL dan PML akan di-update secara berkala dua kali sehari setiap pukul 07.00 WITA dan 20.00 WITA</span>
+                </div>
+            </div>
+        @endif
         <div class="monitoring-stats-row">
             <div class="monitoring-stat-card monitoring-stat-card--overall">
                 <div class="monitoring-stat-card__icon">
