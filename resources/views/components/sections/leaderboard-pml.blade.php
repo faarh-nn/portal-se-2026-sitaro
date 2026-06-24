@@ -8,7 +8,7 @@
         </p>
         @if($pmlLeaderboardLastUpdate)
             @php
-                $importedAt = $pmlLeaderboardLastUpdate->imported_at->setTimezone('Asia/Makassar');
+                $importedAt = $pmlLeaderboardLastUpdate->setTimezone('Asia/Makassar');
                 $hour = (int) $importedAt->format('H');
                 $importedAtYesterday = $importedAt->copy()->subDay();
                 $dayName = '';
@@ -225,7 +225,7 @@
                 @if($pmlLeaderboardLastUpdate)
                     <span class="leaderboard-pml__table-last-update-wrapper" x-data="{ showTooltip: false }">
                         <span class="leaderboard-pml__table-last-update" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false">
-                            Kondisi {{ $pmlLeaderboardLastUpdate->imported_at->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
+                            Kondisi {{ $pmlLeaderboardLastUpdate->setTimezone('Asia/Makassar')->format('j F Y H:i') }} WITA
                         </span>
                         <span class="leaderboard-pml__table-last-update-tooltip"
                               x-show="showTooltip"

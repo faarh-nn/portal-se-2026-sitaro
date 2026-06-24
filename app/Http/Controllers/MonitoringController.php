@@ -158,13 +158,12 @@ class MonitoringController extends Controller
         );
 
         // Get latest leaderboard data from pcl_daily_submits
-        // Use assignment_history import for last update timestamp
+        // Use created_at from pcl_daily_submits for last update timestamp
         $latestDataDate = PclDailySubmit::orderByDesc('data_date')->value('data_date');
-        $leaderboardLastUpdate = $latestDataDate ? MonitoringImport::where('type', 'assignment_history')
-            ->where('status', 'completed')
-            ->whereDate('imported_at', '<=', $latestDataDate)
-            ->orderBy('imported_at', 'desc')
-            ->first() : null;
+        $latestPclRecord = PclDailySubmit::where('data_date', $latestDataDate)
+            ->orderBy('created_at', 'desc')
+            ->first();
+        $leaderboardLastUpdate = $latestPclRecord?->created_at;
 
         if ($latestDataDate) {
             $leaderboardQuery = PclDailySubmit::where('data_date', $latestDataDate)
@@ -201,13 +200,12 @@ class MonitoringController extends Controller
         }
 
         // Get latest PML leaderboard data from pml_daily_submits
-        // Use assignment_history import for last update timestamp
+        // Use created_at from pml_daily_submits for last update timestamp
         $latestPmlDataDate = PmlDailySubmit::orderByDesc('data_date')->value('data_date');
-        $pmlLeaderboardLastUpdate = $latestPmlDataDate ? MonitoringImport::where('type', 'assignment_history')
-            ->where('status', 'completed')
-            ->whereDate('imported_at', '<=', $latestPmlDataDate)
-            ->orderBy('imported_at', 'desc')
-            ->first() : null;
+        $latestPmlRecord = PmlDailySubmit::where('data_date', $latestPmlDataDate)
+            ->orderBy('created_at', 'desc')
+            ->first();
+        $pmlLeaderboardLastUpdate = $latestPmlRecord?->created_at;
 
         if ($latestPmlDataDate) {
             $pmlLeaderboardQuery = PmlDailySubmit::where('data_date', $latestPmlDataDate)

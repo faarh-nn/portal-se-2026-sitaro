@@ -249,7 +249,7 @@
                     <div class="admin-form-group">
                         <div class="admin-form-input-group">
                             <input type="file" name="file_assignment_history" accept=".xlsx,.xls" class="admin-form-file" required>
-                            <button type="submit" class="btn-primary-pill">Upload</button>
+                            <button type="submit" class="btn-primary-pill">Upload Excel</button>
                         </div>
                         <span class="admin-form-hint">
                             Format: Kolom A = Email PML, Kolom B = Role PML, Kolom C = Email PCL, Kolom D = Role PCL,
@@ -257,6 +257,61 @@
                         </span>
                     </div>
                 </form>
+            </div>
+
+            {{-- Daily Submits CSV Import Section --}}
+            <div class="admin-import-section">
+                <div class="admin-import-section__header">
+                    <h3 class="admin-import-section__title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Import Daily Submits via CSV
+                    </h3>
+                    <span class="admin-badge admin-badge--csv">Alternative</span>
+                </div>
+                <p class="admin-import-section__desc">
+                    <strong>Untuk file besar:</strong> Gunakan script Python untuk konversi file Excel ke CSV,
+                    kemudian upload CSV di sini. Lihat: <code>scripts/process_assignment_history.py</code>
+                </p>
+
+                <form action="{{ route('admin.import.daily-submits-csv') }}" method="POST" enctype="multipart/form-data" class="admin-import-form">
+                    @csrf
+                    <div class="admin-form-group">
+                        <div class="admin-form-input-row">
+                            <div class="admin-form-input-item">
+                                <label>File PCL CSV:</label>
+                                <input type="file" name="file_pcl" accept=".csv,.txt" class="admin-form-file">
+                            </div>
+                            <div class="admin-form-input-item">
+                                <label>File PML CSV:</label>
+                                <input type="file" name="file_pml" accept=".csv,.txt" class="admin-form-file">
+                            </div>
+                            <div class="admin-form-input-item">
+                                <label>Tanggal Data:</label>
+                                <input type="date" name="data_date" class="admin-form-input" value="{{ now()->format('Y-m-d') }}">
+                            </div>
+                        </div>
+                        <div class="admin-form-input-group">
+                            <button type="submit" class="btn-secondary-pill">Upload CSV</button>
+                        </div>
+                        <span class="admin-form-hint">
+                            Minimal upload salah satu file CSV.
+                        </span>
+                    </div>
+                </form>
+
+                <div class="admin-import-section__csv-format">
+                    <p><strong>Format CSV PCL:</strong></p>
+                    <code>email,name,kecamatan,daily_submit,total_submit,target_met</code>
+
+                    <p><strong>Format CSV PML:</strong></p>
+                    <code>email,name,daily_reject,daily_approve,daily_combined,total_reject,total_approve,pcl_count,target_met</code>
+                </div>
             </div>
 
             {{-- Import History --}}
