@@ -3,51 +3,11 @@
         @if($lastUpdate)
             @php
                 $importedAt = $lastUpdate->imported_at->setTimezone('Asia/Makassar');
-                $hour = (int) $importedAt->format('H');
-                $importedAtYesterday = $importedAt->copy()->subDay();
-                $dayName = '';
-                if ($hour >= 5 && $hour < 8) {
-                    // 5 pagi WITA - 8 pagi WITA → nama hari kemarin
-                    $dayName = match ($importedAtYesterday->format('l')) {
-                        'Monday' => 'Senin',
-                        'Tuesday' => 'Selasa',
-                        'Wednesday' => 'Rabu',
-                        'Thursday' => 'Kamis',
-                        'Friday' => 'Jumat',
-                        'Saturday' => 'Sabtu',
-                        'Sunday' => 'Minggu',
-                        default => $importedAtYesterday->format('j F Y'),
-                    };
-                } elseif ($hour >= 19 && $hour <= 21) {
-                    // 7 malam WITA - 9 malam WITA → nama hari sesuai last update
-                    $dayName = match ($importedAt->format('l')) {
-                        'Monday' => 'Senin',
-                        'Tuesday' => 'Selasa',
-                        'Wednesday' => 'Rabu',
-                        'Thursday' => 'Kamis',
-                        'Friday' => 'Jumat',
-                        'Saturday' => 'Sabtu',
-                        'Sunday' => 'Minggu',
-                        default => $importedAt->format('j F Y'),
-                    };
-                } else {
-                    // Fallback: tampilkan nama hari sesuai last update untuk jam lain
-                    $dayName = match ($importedAt->format('l')) {
-                        'Monday' => 'Senin',
-                        'Tuesday' => 'Selasa',
-                        'Wednesday' => 'Rabu',
-                        'Thursday' => 'Kamis',
-                        'Friday' => 'Jumat',
-                        'Saturday' => 'Sabtu',
-                        'Sunday' => 'Minggu',
-                        default => $importedAt->format('j F Y'),
-                    };
-                }
                 $conditionText = $importedAt->format('j F Y H:i') . ' WITA';
             @endphp
             <div class="stats-overview__last-update-badge-wrapper" x-data="{ showTooltip: false }">
                 <div class="stats-overview__last-update-badge" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false">
-                    Data {{ $dayName }} kondisi {{ $conditionText }}
+                    Update: {{ $conditionText }}
                 </div>
                 <div class="stats-overview__tooltip"
                      x-show="showTooltip"
