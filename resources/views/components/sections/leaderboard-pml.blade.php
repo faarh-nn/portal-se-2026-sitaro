@@ -266,7 +266,7 @@
                         <th>Rank</th>
                         <th>Nama PML</th>
                         <th>Jumlah PCL</th>
-                        <th>Reject Harian</th>
+                        <th>Reject + Revoke Harian</th>
                         <th>Approve Harian</th>
                         <th>Total (R+A)</th>
                         <th>Target</th>

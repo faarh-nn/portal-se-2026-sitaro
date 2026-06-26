@@ -118,7 +118,7 @@
                             <th>No</th>
                             <th>Nama PML</th>
                             <th>Submit</th>
-                            <th>Reject</th>
+                            <th>Reject + Revoke</th>
                             <th>Approved</th>
                             <th class="pml-table__sortable" x-on:click="toggleSort('progress')">
                                 Approved/Total Assignment

@@ -150,7 +150,7 @@
                             <th>Nama PCL</th>
                             <th>Open</th>
                             <th>Submit</th>
-                            <th>Reject</th>
+                            <th>Reject + Revoke</th>
                             <th>Approve</th>
                             <th>Nama PML</th>
                             <th class="pcl-table__sortable" x-on:click="toggleSort('submit_and_approve_ratio')">
