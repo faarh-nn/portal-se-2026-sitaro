@@ -97,6 +97,21 @@
                             </div>
                         </form>
 
+                        <form action="{{ route('admin.import.clear-kecamatan-mapping') }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus seluruh data mapping kecamatan?');" class="admin-import-form">
+                            @csrf
+                            <div class="admin-form-group">
+                                <label class="admin-form-label">Hapus Data Kecamatan</label>
+                                <button type="submit" class="btn-danger-pill">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    Hapus Semua
+                                </button>
+                                <span class="admin-form-hint">Hapus seluruh data mapping kecamatan</span>
+                            </div>
+                        </form>
+
                         <form action="{{ route('admin.import.officer') }}" method="POST" enctype="multipart/form-data" class="admin-import-form">
                             @csrf
                             <div class="admin-form-group">
@@ -106,6 +121,21 @@
                                     <button type="submit" class="btn-primary-pill">Upload</button>
                                 </div>
                                 <span class="admin-form-hint">Format: Kolom A = Nama Lengkap, Kolom B = Email</span>
+                            </div>
+                        </form>
+
+                        <form action="{{ route('admin.import.clear-officer-mapping') }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus seluruh data mapping officer?');" class="admin-import-form">
+                            @csrf
+                            <div class="admin-form-group">
+                                <label class="admin-form-label">Hapus Data Officer</label>
+                                <button type="submit" class="btn-danger-pill">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    Hapus Semua
+                                </button>
+                                <span class="admin-form-hint">Hapus seluruh data mapping officer</span>
                             </div>
                         </form>
                     </div>

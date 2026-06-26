@@ -624,6 +624,34 @@ class ImportController extends Controller
     }
 
     /**
+     * Clear kecamatan mapping data.
+     */
+    public function clearKecamatanMapping(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        KecamatanMapping::truncate();
+
+        return redirect()->back()->with('success', 'Data mapping kecamatan berhasil dihapus.');
+    }
+
+    /**
+     * Clear officer mapping data.
+     */
+    public function clearOfficerMapping(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        OfficerMapping::truncate();
+
+        return redirect()->back()->with('success', 'Data mapping officer berhasil dihapus.');
+    }
+
+    /**
      * Import assignment history status from Excel.
      * Uses chunked reading with IReadFilter for memory efficiency with large files.
      */
