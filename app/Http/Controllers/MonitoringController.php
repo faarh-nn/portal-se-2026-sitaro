@@ -46,7 +46,9 @@ class MonitoringController extends Controller
         // Calculate totals
         $totalTarget = $kecamatanProgress->sum('total_assignment');
         $totalCompleted = $kecamatanProgress->sum('submit') + $kecamatanProgress->sum('approve');
+        $totalProcessed = $kecamatanProgress->sum('submit') + $kecamatanProgress->sum('approve') + $kecamatanProgress->sum('reject');
         $overallProgress = $totalTarget > 0 ? round(($totalCompleted / $totalTarget) * 100, 1) : 0;
+        $processingProgress = $totalTarget > 0 ? round(($totalProcessed / $totalTarget) * 100, 1) : 0;
 
         // PML (Petugas Pemeriksa Lapangan) progress data from database
         // Filter by latest import_id to avoid double counting from cumulative data
@@ -259,7 +261,9 @@ class MonitoringController extends Controller
             'progressData',
             'totalTarget',
             'totalCompleted',
+            'totalProcessed',
             'overallProgress',
+            'processingProgress',
             'pmlData',
             'pmlTotals',
             'pclData',

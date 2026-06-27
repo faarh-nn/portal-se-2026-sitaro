@@ -28,6 +28,11 @@
                 </div>
             </div>
         @endif
+
+        <div class="stats-overview__section-header">
+            <h3 class="stats-overview__section-title">Statistik Realisasi</h3>
+        </div>
+
         <div class="monitoring-stats-row">
             <div class="monitoring-stat-card monitoring-stat-card--overall">
                 <div class="monitoring-stat-card__icon">
@@ -69,13 +74,65 @@
             </div>
         </div>
 
-        <div class="stats-overview__progress">
+        {{-- Progress Bar Realisasi --}}
+        <div class="stats-overview__progress stats-overview__progress--compact">
             <div class="stats-overview__progress-header">
-                <span class="stats-overview__progress-label">Progress keseluruhan saat ini</span>
-                <span class="stats-overview__progress-value">{{ $overallProgress }}%</span>
+                <span class="stats-overview__progress-label">Realisasi</span>
+                <span class="stats-overview__progress-value stats-overview__progress-value--orange">{{ $overallProgress }}%</span>
             </div>
             <div class="stats-overview__progress-track">
-                <div class="stats-overview__progress-bar" style="width: {{ $overallProgress }}%"></div>
+                <div class="stats-overview__progress-bar stats-overview__progress-bar--orange" style="width: {{ $overallProgress }}%"></div>
+            </div>
+        </div>
+
+        {{-- New: Progress Metrics Row --}}
+        <div class="stats-overview__section-header">
+            <h3 class="stats-overview__section-title stats-overview__section-title--purple">Statistik Pengerjaan</h3>
+        </div>
+
+        <div class="stats-overview__metrics-row">
+            <div class="monitoring-stat-card monitoring-stat-card--purple">
+                <div class="monitoring-stat-card__icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <div class="monitoring-stat-card__content">
+                    <div class="monitoring-stat-card__label-wrapper">
+                        <span class="monitoring-stat-card__label">Progress pengerjaan</span>
+                        <span class="monitoring-stat-card__badge">submit + reject + approve</span>
+                    </div>
+                    <span class="monitoring-stat-card__value">{{ number_format($processingProgress, 1) }}%</span>
+                    <span class="monitoring-stat-card__subtitle"><strong>dari total {{ number_format($totalTarget) }} target</strong></span>
+                </div>
+            </div>
+            <div class="monitoring-stat-card monitoring-stat-card--purple">
+                <div class="monitoring-stat-card__icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                </div>
+                <div class="monitoring-stat-card__content">
+                    <div class="monitoring-stat-card__label-wrapper">
+                        <span class="monitoring-stat-card__label">Assignment yang telah dikerjakan</span>
+                        <span class="monitoring-stat-card__badge">submit + reject + approve</span>
+                    </div>
+                    <span class="monitoring-stat-card__value">{{ number_format($totalProcessed) }}</span>
+                    <span class="monitoring-stat-card__subtitle"><strong>dari total {{ number_format($totalTarget) }} target</strong></span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Progress Bar Progres Pengerjaan --}}
+        <div class="stats-overview__progress">
+            <div class="stats-overview__progress-header">
+                <span class="stats-overview__progress-label">Progres Pengerjaan</span>
+                <span class="stats-overview__progress-value stats-overview__progress-value--purple">{{ $processingProgress }}%</span>
+            </div>
+            <div class="stats-overview__progress-track">
+                <div class="stats-overview__progress-bar stats-overview__progress-bar--purple" style="width: {{ $processingProgress }}%"></div>
             </div>
         </div>
     </div>
