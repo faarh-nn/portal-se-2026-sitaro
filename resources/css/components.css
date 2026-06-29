@@ -4783,6 +4783,17 @@ ul, ol {
     .stats-overview__metric-value {
         font-size: 28px;
     }
+
+    .stats-overview__merged-stats {
+        gap: 12px;
+    }
+
+    .stats-overview__merged-stat-label {
+        font-size: 9px;
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.3;
+    }
 }
 
 .monitoring-stats-row {

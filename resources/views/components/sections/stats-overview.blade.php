@@ -3,7 +3,7 @@
         $donutData = [
             ['label' => 'Open', 'value' => $statusDistribution['open'] ?? 0, 'color' => '#94a3b8'],
             ['label' => 'Draft', 'value' => $statusDistribution['draft'] ?? 0, 'color' => '#fbbf24'],
-            ['label' => 'Submit', 'value' => $statusDistribution['submit'] ?? 0, 'color' => '#f97316'],
+            ['label' => 'Submit', 'value' => $statusDistribution['submit'] ?? 0, 'color' => '#8B5CF6'],
             ['label' => 'Approve', 'value' => $statusDistribution['approve'] ?? 0, 'color' => '#22c55e'],
             ['label' => 'Reject', 'value' => $statusDistribution['reject'] ?? 0, 'color' => '#ef4444'],
         ];
