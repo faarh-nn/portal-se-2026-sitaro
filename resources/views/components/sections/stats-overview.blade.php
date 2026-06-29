@@ -1,5 +1,30 @@
 <section class="stats-overview">
-    <div class="stats-overview__card">
+    @php
+        $donutData = [
+            ['label' => 'Open', 'value' => $statusDistribution['open'] ?? 0, 'color' => '#94a3b8'],
+            ['label' => 'Draft', 'value' => $statusDistribution['draft'] ?? 0, 'color' => '#fbbf24'],
+            ['label' => 'Submit', 'value' => $statusDistribution['submit'] ?? 0, 'color' => '#f97316'],
+            ['label' => 'Approve', 'value' => $statusDistribution['approve'] ?? 0, 'color' => '#22c55e'],
+            ['label' => 'Reject', 'value' => $statusDistribution['reject'] ?? 0, 'color' => '#ef4444'],
+        ];
+    @endphp
+    @php
+        $chartJsData = [
+            'labels' => array_column($donutData, 'label'),
+            'values' => array_column($donutData, 'value'),
+            'colors' => array_column($donutData, 'color'),
+        ];
+    @endphp
+    <div class="stats-overview__card" x-data="{
+        activeSegment: null,
+        labels: {{ json_encode(array_column($donutData, 'label')) }},
+        values: {{ json_encode(array_column($donutData, 'value')) }},
+        total: {{ $totalStatus }},
+        percentages: {{ json_encode(array_map(fn($item) => $totalStatus > 0 ? round(($item['value'] / $totalStatus) * 100, 1) : 0, $donutData)) }},
+        formatNumber(num) {
+            return new Intl.NumberFormat('id-ID').format(num ?? 0);
+        }
+    }">
         @if($lastUpdate)
             @php
                 $importedAt = $lastUpdate->imported_at->setTimezone('Asia/Makassar');
@@ -30,110 +55,105 @@
         @endif
 
         <div class="stats-overview__section-header">
-            <h3 class="stats-overview__section-title">Statistik Realisasi</h3>
+            <h3 class="stats-overview__section-title">STATISTIK REALISASI DAN PENGERJAAN</h3>
         </div>
 
-        <div class="monitoring-stats-row">
-            <div class="monitoring-stat-card monitoring-stat-card--overall">
-                <div class="monitoring-stat-card__icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
-                </div>
-                <div class="monitoring-stat-card__content">
-                    <span class="monitoring-stat-card__value">{{ $overallProgress }}%</span>
-                    <span class="monitoring-stat-card__label">Realisasi</span>
-                </div>
-            </div>
-
-            <div class="monitoring-stat-card monitoring-stat-card--target">
-                <div class="monitoring-stat-card__icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <circle cx="12" cy="12" r="6"></circle>
-                        <circle cx="12" cy="12" r="2"></circle>
-                    </svg>
-                </div>
-                <div class="monitoring-stat-card__content">
-                    <span class="monitoring-stat-card__value">{{ number_format($totalTarget) }}</span>
-                    <span class="monitoring-stat-card__label">Target Pencacahan</span>
-                </div>
-            </div>
-
-            <div class="monitoring-stat-card monitoring-stat-card--completed">
-                <div class="monitoring-stat-card__icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 6 9 17l-5-5"></path>
-                    </svg>
-                </div>
-                <div class="monitoring-stat-card__content">
-                    <span class="monitoring-stat-card__value">{{ number_format($totalCompleted) }}</span>
-                    <span class="monitoring-stat-card__label">Tercacah (Submit + Approve)</span>
-                </div>
-            </div>
-        </div>
-
-        {{-- Progress Bar Realisasi --}}
-        <div class="stats-overview__progress stats-overview__progress--compact">
-            <div class="stats-overview__progress-header">
-                <span class="stats-overview__progress-label">Realisasi</span>
-                <span class="stats-overview__progress-value stats-overview__progress-value--orange">{{ $overallProgress }}%</span>
-            </div>
-            <div class="stats-overview__progress-track">
-                <div class="stats-overview__progress-bar stats-overview__progress-bar--orange" style="width: {{ $overallProgress }}%"></div>
-            </div>
-        </div>
-
-        {{-- New: Progress Metrics Row --}}
-        <div class="stats-overview__section-header">
-            <h3 class="stats-overview__section-title stats-overview__section-title--purple">Statistik Pengerjaan</h3>
-        </div>
-
-        <div class="stats-overview__metrics-row">
-            <div class="monitoring-stat-card monitoring-stat-card--purple">
-                <div class="monitoring-stat-card__icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                </div>
-                <div class="monitoring-stat-card__content">
-                    <div class="monitoring-stat-card__label-wrapper">
-                        <span class="monitoring-stat-card__label">Progress pengerjaan</span>
-                        <span class="monitoring-stat-card__badge">submit + reject + approve</span>
+        <div class="stats-overview__main-grid">
+            <div class="stats-overview__main-grid-left">
+                {{-- Merged Card: Progress Total Realisasi & Total Tercacah --}}
+                <div class="monitoring-stat-card monitoring-stat-card--overall stats-overview__metrics-card--merged">
+                    <div class="monitoring-stat-card__content">
+                        <div class="monitoring-stat-card__label-wrapper">
+                            <span class="monitoring-stat-card__label">Progress Total Realisasi <strong>(submit + approve)</strong></span>
+                        </div>
+                        <div class="stats-overview__merged-stats">
+                            <div class="stats-overview__merged-stat stats-overview__merged-stat--percentage">
+                                <span class="stats-overview__merged-stat-value">{{ $overallProgress }}%</span>
+                                <span class="stats-overview__merged-stat-label">Progress</span>
+                            </div>
+                            <div class="stats-overview__merged-divider">
+                                <div class="stats-overview__merged-divider-line"></div>
+                                <div class="stats-overview__merged-divider-dot"></div>
+                                <div class="stats-overview__merged-divider-line"></div>
+                            </div>
+                            <div class="stats-overview__merged-stat stats-overview__merged-stat--absolute">
+                                <span class="stats-overview__merged-stat-value">{{ number_format($totalCompleted) }}</span>
+                                <span class="stats-overview__merged-stat-label">Realisasi</span>
+                            </div>
+                        </div>
+                        <div class="stats-overview__merged-footer">
+                            <span class="stats-overview__merged-footer-text">dari total <strong>{{ number_format($totalTarget) }}</strong> target</span>
+                        </div>
+                        <div class="monitoring-stat-card__progress">
+                            <div class="monitoring-stat-card__progress-track">
+                                <div class="monitoring-stat-card__progress-bar" style="width: {{ $overallProgress }}%"></div>
+                            </div>
+                        </div>
                     </div>
-                    <span class="monitoring-stat-card__value">{{ number_format($processingProgress, 1) }}%</span>
-                    <span class="monitoring-stat-card__subtitle"><strong>dari total {{ number_format($totalTarget) }} target</strong></span>
+                </div>
+
+                {{-- Merged Card: Progress & Total Pengerjaan --}}
+                <div class="monitoring-stat-card monitoring-stat-card--purple stats-overview__metrics-card stats-overview__metrics-card--merged">
+                    <div class="monitoring-stat-card__content">
+                        <div class="monitoring-stat-card__label-wrapper">
+                            <span class="monitoring-stat-card__label">Progress Pengerjaan <strong>(submit + approve + reject)</strong></span>
+                        </div>
+                        <div class="stats-overview__merged-stats">
+                            <div class="stats-overview__merged-stat stats-overview__merged-stat--percentage">
+                                <span class="stats-overview__merged-stat-value">{{ number_format($processingProgress, 1) }}%</span>
+                                <span class="stats-overview__merged-stat-label">Progress</span>
+                            </div>
+                            <div class="stats-overview__merged-divider">
+                                <div class="stats-overview__merged-divider-line"></div>
+                                <div class="stats-overview__merged-divider-dot"></div>
+                                <div class="stats-overview__merged-divider-line"></div>
+                            </div>
+                            <div class="stats-overview__merged-stat stats-overview__merged-stat--absolute">
+                                <span class="stats-overview__merged-stat-value">{{ number_format($totalProcessed) }}</span>
+                                <span class="stats-overview__merged-stat-label">Assignment Dikerjakan</span>
+                            </div>
+                        </div>
+                        <div class="stats-overview__merged-footer">
+                            <span class="stats-overview__merged-footer-text">dari total <strong>{{ number_format($totalTarget) }}</strong> target</span>
+                        </div>
+                        <div class="monitoring-stat-card__progress">
+                            <div class="monitoring-stat-card__progress-track">
+                                <div class="monitoring-stat-card__progress-bar" style="width: {{ $processingProgress }}%"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="monitoring-stat-card monitoring-stat-card--purple">
-                <div class="monitoring-stat-card__icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                    </svg>
+
+            {{-- Donut Chart & Legend - Spanning 2 rows --}}
+            <div class="stats-overview__donut-container"
+                 x-data="donutChart({{ json_encode($chartJsData) }})">
+                <div class="stats-overview__donut-header">
+                    <span class="stats-overview__donut-header-title">Distribusi Assignment Berdasarkan Status</span>
                 </div>
-                <div class="monitoring-stat-card__content">
-                    <div class="monitoring-stat-card__label-wrapper">
-                        <span class="monitoring-stat-card__label">Assignment yang telah dikerjakan</span>
-                        <span class="monitoring-stat-card__badge">submit + reject + approve</span>
+                <div class="stats-overview__donut-body">
+                    <div class="stats-overview__donut-wrapper">
+                        <canvas x-ref="chartCanvas"></canvas>
                     </div>
-                    <span class="monitoring-stat-card__value">{{ number_format($totalProcessed) }}</span>
-                    <span class="monitoring-stat-card__subtitle"><strong>dari total {{ number_format($totalTarget) }} target</strong></span>
+                    <div class="stats-overview__donut-legend">
+                        <template x-for="(label, index) in chartData.labels" :key="index">
+                            <div class="stats-overview__donut-legend-item"
+                                 :class="{ 'active': activeSegment === index }"
+                                 @mouseenter="activeSegment = index"
+                                 @mouseleave="activeSegment = null">
+                                <span class="stats-overview__donut-legend-dot"
+                                      :style="`background-color: ${chartData.colors[index]}`"></span>
+                                <span class="stats-overview__donut-legend-label" x-text="label"></span>
+                                <span class="stats-overview__donut-legend-value"
+                                      x-text="formatNumber(chartData.values[index])"></span>
+                                <span class="stats-overview__donut-legend-percent"
+                                      x-text="`(${getPercentage(index)}%)`"></span>
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>
 
-        {{-- Progress Bar Progres Pengerjaan --}}
-        <div class="stats-overview__progress">
-            <div class="stats-overview__progress-header">
-                <span class="stats-overview__progress-label">Progres Pengerjaan</span>
-                <span class="stats-overview__progress-value stats-overview__progress-value--purple">{{ $processingProgress }}%</span>
-            </div>
-            <div class="stats-overview__progress-track">
-                <div class="stats-overview__progress-bar stats-overview__progress-bar--purple" style="width: {{ $processingProgress }}%"></div>
-            </div>
-        </div>
     </div>
 </section>

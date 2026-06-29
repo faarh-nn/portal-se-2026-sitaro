@@ -46,7 +46,7 @@
     </div>
 
     <div class="monitoring-section__container">
-        <x-sections.stats-overview :overallProgress="$overallProgress" :totalTarget="$totalTarget" :totalCompleted="$totalCompleted" :totalProcessed="$totalProcessed" :processingProgress="$processingProgress" :lastUpdate="$pclLastUpdate" />
+        <x-sections.stats-overview :overallProgress="$overallProgress" :totalTarget="$totalTarget" :totalCompleted="$totalCompleted" :totalProcessed="$totalProcessed" :processingProgress="$processingProgress" :statusDistribution="$statusDistribution" :totalStatus="$totalStatus" :lastUpdate="$pclLastUpdate" />
         <x-sections.leaderboard-pcl :leaderboardData="$leaderboardData" :leaderboardDataPaginated="$leaderboardDataPaginated" :leaderboardLastUpdate="$leaderboardLastUpdate" />
         <x-sections.leaderboard-pml :pmlLeaderboardData="$pmlLeaderboardData" :pmlLeaderboardDataPaginated="$pmlLeaderboardDataPaginated" :pmlLeaderboardLastUpdate="$pmlLeaderboardLastUpdate" />
         <x-sections.progress-pcl :pclData="$pclData" :pclTotals="$pclTotals" :pclDataPaginated="$pclDataPaginated" :pmlList="$pmlList" :pclLastUpdate="$pclLastUpdate" />

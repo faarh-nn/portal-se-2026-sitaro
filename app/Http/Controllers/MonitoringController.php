@@ -50,6 +50,16 @@ class MonitoringController extends Controller
         $overallProgress = $totalTarget > 0 ? round(($totalCompleted / $totalTarget) * 100, 1) : 0;
         $processingProgress = $totalTarget > 0 ? round(($totalProcessed / $totalTarget) * 100, 1) : 0;
 
+        // Calculate status distribution for donut chart
+        $statusDistribution = [
+            'open' => $kecamatanProgress->sum('open'),
+            'draft' => $kecamatanProgress->sum('draft'),
+            'submit' => $kecamatanProgress->sum('submit'),
+            'approve' => $kecamatanProgress->sum('approve'),
+            'reject' => $kecamatanProgress->sum('reject'),
+        ];
+        $totalStatus = array_sum($statusDistribution);
+
         // PML (Petugas Pemeriksa Lapangan) progress data from database
         // Filter by latest import_id to avoid double counting from cumulative data
         $pmlProgressData = PmlProgress::where('import_id', $latestPmlImportId)
@@ -262,8 +272,10 @@ class MonitoringController extends Controller
             'totalTarget',
             'totalCompleted',
             'totalProcessed',
+            'totalStatus',
             'overallProgress',
             'processingProgress',
+            'statusDistribution',
             'pmlData',
             'pmlTotals',
             'pclData',
