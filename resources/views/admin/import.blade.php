@@ -245,6 +245,63 @@
                 </form>
             </div>
 
+            {{-- Calculate Daily Submits from Progress Data --}}
+            <div class="admin-import-section">
+                <div class="admin-import-section__header">
+                    <h3 class="admin-import-section__title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                            <rect x="9" y="9" width="6" height="6"></rect>
+                            <line x1="9" y1="1" x2="9" y2="4"></line>
+                            <line x1="15" y1="1" x2="15" y2="4"></line>
+                            <line x1="9" y1="20" x2="9" y2="23"></line>
+                            <line x1="15" y1="20" x2="15" y2="23"></line>
+                            <line x1="20" y1="9" x2="23" y2="9"></line>
+                            <line x1="20" y1="14" x2="23" y2="14"></line>
+                            <line x1="1" y1="9" x2="4" y2="9"></line>
+                            <line x1="1" y1="14" x2="4" y2="14"></line>
+                        </svg>
+                        Hitung Daily Submits dari Progress
+                    </h3>
+                </div>
+                <p class="admin-import-section__desc">
+                    Menghitung dan mengisi data leaderboard PCL dan PML berdasarkan data progress yang telah diimport.
+                    <br>
+                    <strong>Catatan:</strong> Butuh minimal 2x import data progress (dengan import_id berbeda) untuk dapat menghitung delta (selisih).
+                </p>
+
+                <div class="admin-calculate-info">
+                    <div class="admin-calculate-formula">
+                        <p><strong>Formula PCL:</strong></p>
+                        <ul>
+                            <li>deltaSubmit = submit_t - submit_(t-1)</li>
+                            <li>deltaApprove = approve_t - approve_(t-1)</li>
+                            <li>deltaReject = reject_t - reject_(t-1)</li>
+                            <li>dailySubmit = deltaSubmit + deltaApprove + max(deltaReject, 0)</li>
+                        </ul>
+                    </div>
+                    <div class="admin-calculate-formula">
+                        <p><strong>Formula PML:</strong></p>
+                        <ul>
+                            <li>deltaApprove = approve_t - approve_(t-1)</li>
+                            <li>deltaReject = reject_t - reject_(t-1)</li>
+                            <li>dailySubmit = deltaApprove + max(deltaReject, 0)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <form action="{{ route('admin.import.calculate-daily-submits') }}" method="POST" onsubmit="return confirm('Yakin ingin menghitung dan mengisi data leaderboard? Data lama akan ditimpa.');">
+                    @csrf
+                    <button type="submit" class="btn-primary-pill">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                        Hitung & Isi Leaderboard
+                    </button>
+                </form>
+            </div>
+
             {{-- Daily Submits CSV Import Section --}}
             <div class="admin-import-section">
                 <div class="admin-import-section__header">

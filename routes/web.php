@@ -40,4 +40,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/import/clear-kecamatan-mapping', [ImportController::class, 'clearKecamatanMapping'])->name('import.clear-kecamatan-mapping');
     Route::post('/import/clear-officer-mapping', [ImportController::class, 'clearOfficerMapping'])->name('import.clear-officer-mapping');
     Route::post('/import/daily-submits-csv', [ImportController::class, 'importDailySubmitsCsv'])->name('import.daily-submits-csv');
+    Route::post('/import/calculate-daily-submits', [ImportController::class, 'calculateDailySubmits'])->name('import.calculate-daily-submits');
 });

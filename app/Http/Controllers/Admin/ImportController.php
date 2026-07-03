@@ -635,6 +635,226 @@ class ImportController extends Controller
     }
 
     /**
+     * Calculate and fill pcl_daily_submits and pml_daily_submits from progress data.
+     */
+    public function calculateDailySubmits(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        try {
+            $pclCount = $this->calculatePclDailySubmits();
+            $pmlCount = $this->calculatePmlDailySubmits();
+
+            return redirect()->back()->with('success', "Berhasil menghitung {$pclCount} data PCL dan {$pmlCount} data PML.");
+        } catch (\Exception $e) {
+            Log::error('Calculate daily submits failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->back()->with('error', 'Gagal menghitung: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Calculate PCL daily submits from pcl_progress data.
+     *
+     * For each PCL:
+     * - deltaSubmit = submit_t - submit_(t-1)
+     * - deltaApprove = approve_t - approve_(t-1)
+     * - deltaReject = reject_t - reject_(t-1)
+     * - dailySubmit = deltaSubmit + deltaApprove + max(deltaReject, 0)
+     */
+    private function calculatePclDailySubmits(): int
+    {
+        // Get the top 2 import_ids from pcl_progress
+        $importIds = PclProgress::select('import_id')
+            ->distinct()
+            ->orderByDesc('import_id')
+            ->limit(2)
+            ->pluck('import_id')
+            ->toArray();
+
+        // Need at least 2 import_ids to calculate delta
+        if (count($importIds) < 2) {
+            return 0;
+        }
+
+        [$importIdT, $importIdTMinus1] = $importIds;
+
+        // Get officer names
+        $officerNames = OfficerMapping::where('type', 'PCL')
+            ->pluck('name', 'email')
+            ->toArray();
+
+        // Get kecamatans per PCL from pcl_progress (master data)
+        $kecamatansByEmail = PclProgress::select('email', 'kecamatan')
+            ->where('import_id', $importIdT)
+            ->distinct()
+            ->get()
+            ->groupBy('email')
+            ->map(fn ($items) => $items->pluck('kecamatan')->filter()->unique()->values()->toArray());
+
+        // Aggregate data for import_id = t (current)
+        $dataT = PclProgress::where('import_id', $importIdT)
+            ->selectRaw('email, SUM(submit) as submit, SUM(approve) as approve, SUM(reject) as reject')
+            ->groupBy('email')
+            ->get()
+            ->keyBy('email');
+
+        // Aggregate data for import_id = t-1 (previous)
+        $dataTMinus1 = PclProgress::where('import_id', $importIdTMinus1)
+            ->selectRaw('email, SUM(submit) as submit, SUM(approve) as approve, SUM(reject) as reject')
+            ->groupBy('email')
+            ->get()
+            ->keyBy('email');
+
+        // Get data_date from monitoring_imports
+        $dataDate = MonitoringImport::where('id', $importIdT)->value('imported_at') ?? now();
+
+        $count = 0;
+        $emailsToProcess = $dataT->keys()->merge($dataTMinus1->keys())->unique();
+
+        foreach ($emailsToProcess as $email) {
+            $rowT = $dataT->get($email);
+            $rowTMinus1 = $dataTMinus1->get($email);
+
+            $submitT = $rowT->submit ?? 0;
+            $approveT = $rowT->approve ?? 0;
+            $rejectT = $rowT->reject ?? 0;
+
+            $submitTMinus1 = $rowTMinus1->submit ?? 0;
+            $approveTMinus1 = $rowTMinus1->approve ?? 0;
+            $rejectTMinus1 = $rowTMinus1->reject ?? 0;
+
+            $deltaSubmit = $submitT - $submitTMinus1;
+            $deltaApprove = $approveT - $approveTMinus1;
+            $deltaReject = $rejectT - $rejectTMinus1;
+
+            $dailySubmit = $deltaSubmit + $deltaApprove + max($deltaReject, 0);
+            $totalSubmit = $submitT + $approveT + $rejectT;
+
+            $kecamatans = $kecamatansByEmail->get($email, []);
+
+            PclDailySubmit::updateOrCreate(
+                ['email' => $email, 'data_date' => $dataDate->format('Y-m-d')],
+                [
+                    'name' => $officerNames[$email] ?? null,
+                    'kecamatan' => $kecamatans,
+                    'daily_submit' => $dailySubmit,
+                    'total_submit' => $totalSubmit,
+                    'target_met' => $dailySubmit >= 10,
+                ]
+            );
+
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Calculate PML daily submits from pml_progress data.
+     *
+     * For each PML:
+     * - deltaApprove = approve_t - approve_(t-1)
+     * - deltaReject = reject_t - reject_(t-1)
+     * - dailySubmit = deltaApprove + max(deltaReject, 0)
+     */
+    private function calculatePmlDailySubmits(): int
+    {
+        // Get the top 2 import_ids from pml_progress
+        $importIds = PmlProgress::select('import_id')
+            ->distinct()
+            ->orderByDesc('import_id')
+            ->limit(2)
+            ->pluck('import_id')
+            ->toArray();
+
+        // Need at least 2 import_ids to calculate delta
+        if (count($importIds) < 2) {
+            return 0;
+        }
+
+        [$importIdT, $importIdTMinus1] = $importIds;
+
+        // Get officer names
+        $officerNames = OfficerMapping::where('type', 'PML')
+            ->pluck('name', 'email')
+            ->toArray();
+
+        // Get PCL count per PML from pcl_pml mapping
+        $pclCounts = PclPml::select('pml_email', DB::raw('COUNT(*) as count'))
+            ->groupBy('pml_email')
+            ->pluck('count', 'pml_email')
+            ->toArray();
+
+        // Get data for import_id = t (current)
+        $dataT = PmlProgress::where('import_id', $importIdT)
+            ->selectRaw('email, SUM(approve) as approve, SUM(reject) as reject')
+            ->groupBy('email')
+            ->get()
+            ->keyBy('email');
+
+        // Get data for import_id = t-1 (previous)
+        $dataTMinus1 = PmlProgress::where('import_id', $importIdTMinus1)
+            ->selectRaw('email, SUM(approve) as approve, SUM(reject) as reject')
+            ->groupBy('email')
+            ->get()
+            ->keyBy('email');
+
+        // Get data_date from monitoring_imports
+        $dataDate = MonitoringImport::where('id', $importIdT)->value('imported_at') ?? now();
+
+        $count = 0;
+        $emailsToProcess = $dataT->keys()->merge($dataTMinus1->keys())->unique();
+
+        foreach ($emailsToProcess as $email) {
+            $rowT = $dataT->get($email);
+            $rowTMinus1 = $dataTMinus1->get($email);
+
+            $approveT = $rowT->approve ?? 0;
+            $rejectT = $rowT->reject ?? 0;
+
+            $approveTMinus1 = $rowTMinus1->approve ?? 0;
+            $rejectTMinus1 = $rowTMinus1->reject ?? 0;
+
+            $deltaApprove = $approveT - $approveTMinus1;
+            $deltaReject = $rejectT - $rejectTMinus1;
+
+            $dailyCombined = $deltaApprove + max($deltaReject, 0);
+            $totalApprove = $approveT;
+            $totalReject = $rejectT;
+
+            $pclCount = $pclCounts[$email] ?? 0;
+
+            // Calculate target threshold: 5 * pcl_count
+            $targetThreshold = 5 * $pclCount;
+            $targetMet = $pclCount > 0 && $dailyCombined >= $targetThreshold;
+
+            PmlDailySubmit::updateOrCreate(
+                ['email' => $email, 'data_date' => $dataDate->format('Y-m-d')],
+                [
+                    'name' => $officerNames[$email] ?? null,
+                    'daily_reject' => max($deltaReject, 0),
+                    'daily_approve' => max($deltaApprove, 0),
+                    'daily_combined' => $dailyCombined,
+                    'total_reject' => $totalReject,
+                    'total_approve' => $totalApprove,
+                    'pcl_count' => $pclCount,
+                    'target_met' => $targetMet,
+                ]
+            );
+
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
      * Import daily submits from CSV files.
      */
     public function importDailySubmitsCsv(Request $request)
