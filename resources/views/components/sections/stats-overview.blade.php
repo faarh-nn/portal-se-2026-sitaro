@@ -68,7 +68,7 @@
                         </div>
                         <div class="stats-overview__merged-stats">
                             <div class="stats-overview__merged-stat stats-overview__merged-stat--percentage">
-                                <span class="stats-overview__merged-stat-value">{{ $overallProgress }}%</span>
+                                <span class="stats-overview__merged-stat-value">{{ number_format($overallProgress, 2) }}%</span>
                                 <span class="stats-overview__merged-stat-label">Progress</span>
                             </div>
                             <div class="stats-overview__merged-divider">
@@ -100,7 +100,7 @@
                         </div>
                         <div class="stats-overview__merged-stats">
                             <div class="stats-overview__merged-stat stats-overview__merged-stat--percentage">
-                                <span class="stats-overview__merged-stat-value">{{ number_format($processingProgress, 1) }}%</span>
+                                <span class="stats-overview__merged-stat-value">{{ number_format($processingProgress, 2) }}%</span>
                                 <span class="stats-overview__merged-stat-label">Progress</span>
                             </div>
                             <div class="stats-overview__merged-divider">
