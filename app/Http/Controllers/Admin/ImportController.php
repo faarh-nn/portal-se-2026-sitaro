@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AssignmentHistoryStatus;
-use App\Models\AssignmentHistoryStatusItem;
 use App\Models\KecamatanMapping;
 use App\Models\KecamatanProgress;
 use App\Models\MonitoringImport;
@@ -16,15 +14,11 @@ use App\Models\PclTotalAssignment;
 use App\Models\PmlDailySubmit;
 use App\Models\PmlProgress;
 use App\Models\PmlTotalAssignment;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
-use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class ImportController extends Controller
 {
@@ -486,23 +480,12 @@ class ImportController extends Controller
                 KecamatanProgress::where('import_id', $pclImportId)->delete();
             }
 
-            // 3. Delete pcl_daily_submits with data_dates from the deleted imports
-            // Only delete if there are matching records that need cleanup
-            if (! empty($latestDataDates)) {
-                PclDailySubmit::whereIn('data_date', $latestDataDates)->delete();
-            }
-
-            // 4. Delete pcl_progress with the deleted PCL import_id
+            // 3. Delete pcl_progress with the deleted PCL import_id
             if ($pclImportId) {
                 PclProgress::where('import_id', $pclImportId)->delete();
             }
 
-            // 5. Delete pml_daily_submits with data_dates from the deleted imports
-            if (! empty($latestDataDates)) {
-                PmlDailySubmit::whereIn('data_date', $latestDataDates)->delete();
-            }
-
-            // 6. Delete pml_progress with the deleted PML import_id
+            // 4. Delete pml_progress with the deleted PML import_id
             if ($pmlImportId) {
                 PmlProgress::where('import_id', $pmlImportId)->delete();
             }
@@ -652,449 +635,7 @@ class ImportController extends Controller
     }
 
     /**
-     * Import assignment history status from Excel.
-     * Uses chunked reading with IReadFilter for memory efficiency with large files.
-     */
-    public function importAssignmentHistory(Request $request)
-    {
-        $request->validate([
-            'file_assignment_history' => 'required|file|mimes:xlsx,xls|max:10240',
-        ]);
-
-        $import = MonitoringImport::create([
-            'file_name' => $request->file('file_assignment_history')->getClientOriginalName(),
-            'type' => 'assignment_history',
-            'status' => 'processing',
-            'imported_by' => auth()->id(),
-            'imported_at' => now(),
-        ]);
-
-        try {
-            $file = $request->file('file_assignment_history');
-            $importedAt = now();
-            $totalCount = 0;
-
-            // First, get total rows using a lightweight approach
-            $reader = IOFactory::createReaderForFile($file->getPathname());
-            $reader->setReadDataOnly(true);
-
-            // Get total row count without loading all data
-            $totalRows = $this->getTotalRows($file->getPathname());
-            $chunkSize = 100; // Process 100 rows at a time
-            $highestColumnIndex = 50; // Assuming max 50 columns, adjust if needed
-
-            // Get current max ID for assignment_history_statuses to avoid collisions
-            $currentMaxId = DB::table('assignment_history_statuses')->max('id') ?? 0;
-            $now = $importedAt->format('Y-m-d H:i:s');
-
-            // Process data in chunks
-            for ($startRow = 2; $startRow <= $totalRows; $startRow += $chunkSize) {
-                $endRow = min($startRow + $chunkSize - 1, $totalRows);
-
-                // Create a new filter for this chunk
-                $filter = new ChunkReadFilter($startRow, $endRow, 1, $highestColumnIndex);
-                $reader->setReadFilter($filter);
-
-                // Load only the current chunk
-                $spreadsheet = $reader->load($file->getPathname());
-                $worksheet = $spreadsheet->getActiveSheet();
-
-                // Collect rows from this chunk
-                $chunkData = [];
-                for ($rowNum = $startRow; $rowNum <= $endRow; $rowNum++) {
-                    $rowData = [];
-                    for ($col = 1; $col <= $highestColumnIndex; $col++) {
-                        $cellValue = $worksheet->getCellByColumnAndRow($col, $rowNum)->getValue();
-                        $rowData[$col] = $cellValue;
-                    }
-                    $chunkData[] = $rowData;
-                }
-
-                // Process this chunk
-                $chunkCounts = $this->processAssignmentHistoryChunk(
-                    $chunkData,
-                    $import->id,
-                    $now,
-                    $currentMaxId
-                );
-                $totalCount += $chunkCounts['assignments'];
-                $currentMaxId = $chunkCounts['lastId'];
-
-                // Free memory
-                $spreadsheet->disconnectWorksheets();
-                unset($spreadsheet);
-                gc_collect_cycles();
-            }
-
-            $import->markCompleted($totalCount);
-
-            // Calculate daily submits based on the new history data
-            $this->calculateDailySubmitsFromHistory($import->id, $importedAt);
-
-            return redirect()->back()->with('success', "Berhasil import {$totalCount} data history assignment.");
-        } catch (\Exception $e) {
-            Log::error('Assignment history import failed', [
-                'import_id' => $import->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            $import->markFailed($e->getMessage());
-
-            return redirect()->back()->with('error', 'Gagal import: '.$e->getMessage());
-        }
-    }
-
-    /**
-     * Get total number of rows in the spreadsheet without loading all data.
-     */
-    private function getTotalRows(string $filePath): int
-    {
-        $reader = IOFactory::createReaderForFile($filePath);
-        $reader->setReadDataOnly(true);
-        $spreadsheet = $reader->load($filePath);
-        $worksheet = $spreadsheet->getActiveSheet();
-        $highestRow = $worksheet->getHighestRow();
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet);
-
-        return $highestRow;
-    }
-
-    /**
-     * Process a chunk of assignment history rows using bulk insert.
-     *
-     * @return array{assignments: int, lastId: int}
-     */
-    private function processAssignmentHistoryChunk(array $rows, int $importId, string $now, int $currentMaxId): array
-    {
-        $assignmentRecords = [];
-        $historyItemRecords = [];
-
-        foreach ($rows as $rowData) {
-            // Check if pml_email (col 1 in 1-based) and pcl_email (col 3 in 1-based) exist
-            $pmlEmail = isset($rowData[1]) ? strtolower(trim((string) $rowData[1])) : '';
-            $pclEmail = isset($rowData[3]) ? strtolower(trim((string) $rowData[3])) : '';
-
-            if (empty($pmlEmail) || empty($pclEmail)) {
-                continue;
-            }
-
-            // Increment assignment ID
-            $currentMaxId++;
-            $assignmentId = $currentMaxId;
-
-            // Prepare assignment history status record
-            $assignmentRecords[] = [
-                'id' => $assignmentId,
-                'pml_email' => $pmlEmail,
-                'pcl_email' => $pclEmail,
-                'import_id' => $importId,
-                'imported_at' => $now,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
-
-            // Collect all history status items from columns 5 onwards (0-indexed: 4)
-            $historyColumns = array_slice($rowData, 4);
-            $i = 0;
-
-            while ($i < count($historyColumns) - 1) {
-                $status = trim((string) ($historyColumns[$i] ?? ''));
-                $tanggalRaw = trim((string) ($historyColumns[$i + 1] ?? ''));
-
-                if (! empty($status) && ! empty($tanggalRaw)) {
-                    $parsedDate = $this->parseDateTime($tanggalRaw);
-                    if ($parsedDate !== null) {
-                        $historyItemRecords[] = [
-                            'assignment_history_status_id' => $assignmentId,
-                            'status' => $status,
-                            'tanggal' => $parsedDate,
-                            'created_at' => $now,
-                            'updated_at' => $now,
-                        ];
-                    }
-                }
-
-                $i += 2;
-            }
-        }
-
-        // Bulk insert
-        $this->bulkInsertAssignmentHistory($assignmentRecords, $historyItemRecords);
-
-        return [
-            'assignments' => count($assignmentRecords),
-            'lastId' => $currentMaxId,
-        ];
-    }
-
-    /**
-     * Bulk insert assignment history and history items.
-     */
-    private function bulkInsertAssignmentHistory(array $assignments, array $historyItems): void
-    {
-        if (! empty($assignments)) {
-            DB::table('assignment_history_statuses')->insert($assignments);
-        }
-
-        if (! empty($historyItems)) {
-            // Insert in smaller batches to avoid query size limits
-            $batches = array_chunk($historyItems, 500);
-            foreach ($batches as $batch) {
-                DB::table('assignment_history_status_items')->insert($batch);
-            }
-        }
-    }
-
-    /**
-     * Parse datetime string from Excel format.
-     */
-    private function parseDateTime(string $value): ?string
-    {
-        if (empty($value)) {
-            return null;
-        }
-
-        // Try parsing as datetime string first
-        try {
-            return Carbon::parse($value)->format('Y-m-d H:i:s');
-        } catch (\Exception $e) {
-            // If it fails, try Excel serial date format
-            if (is_numeric($value)) {
-                try {
-                    return Date::excelToDateTimeObject($value)
-                        ->format('Y-m-d H:i:s');
-                } catch (\Exception $e2) {
-                    return null;
-                }
-            }
-
-            return null;
-        }
-    }
-
-    /**
-     * Calculate daily submits for PCL and PML from assignment history data.
-     *
-     * Daily Submit PCL: Count of history statuses containing "SUBMITTED" within 1-day range
-     * Daily Submit PML: Count of history statuses containing "REJECT" or "REVOKE" (reject daily)
-     *                   + Count of history statuses containing "APPROVE" (approve daily)
-     */
-    private function calculateDailySubmitsFromHistory(int $importId, $importedAt): void
-    {
-        // Define the 1-day range: from (imported_at - 1 day) to imported_at
-        $rangeStart = $importedAt->copy()->subDay();
-        $rangeEnd = $importedAt->copy();
-
-        // Get officer names
-        $officerNames = OfficerMapping::pluck('name', 'email')->toArray();
-
-        // Get PCL counts per PML from pcl_pml mapping
-        $pclCounts = PclPml::select('pml_email', DB::raw('COUNT(*) as count'))
-            ->groupBy('pml_email')
-            ->pluck('count', 'pml_email')
-            ->toArray();
-
-        // Calculate PCL daily submits
-        $this->calculatePclDailySubmitsFromHistory(
-            $importId,
-            $rangeStart,
-            $rangeEnd,
-            $officerNames
-        );
-
-        // Calculate PML daily submits
-        $this->calculatePmlDailySubmitsFromHistory(
-            $importId,
-            $rangeStart,
-            $rangeEnd,
-            $officerNames,
-            $pclCounts
-        );
-    }
-
-    /**
-     * Calculate daily submits for PCL from assignment history.
-     */
-    private function calculatePclDailySubmitsFromHistory(
-        int $importId,
-        $rangeStart,
-        $rangeEnd,
-        array $officerNames
-    ): void {
-        // Get all assignment history records for this import
-        $assignmentIds = AssignmentHistoryStatus::where('import_id', $importId)
-            ->pluck('id')
-            ->toArray();
-
-        if (empty($assignmentIds)) {
-            return;
-        }
-
-        // Get all unique PCL emails from assignment history
-        $allPclEmails = AssignmentHistoryStatus::where('import_id', $importId)
-            ->distinct()
-            ->pluck('pcl_email')
-            ->toArray();
-
-        // Count SUBMITTED statuses within the range for each PCL
-        $pclDailyCounts = DB::table('assignment_history_status_items')
-            ->join('assignment_history_statuses', 'assignment_history_status_items.assignment_history_status_id', '=', 'assignment_history_statuses.id')
-            ->whereIn('assignment_history_statuses.id', $assignmentIds)
-            ->whereBetween('assignment_history_status_items.tanggal', [$rangeStart, $rangeEnd])
-            ->where(function ($query) {
-                $query->where('assignment_history_status_items.status', 'LIKE', '%SUBMITTED%')
-                    ->orWhere('assignment_history_status_items.status', 'LIKE', '%submitted%');
-            })
-            ->groupBy('assignment_history_statuses.pcl_email')
-            ->select('assignment_history_statuses.pcl_email', DB::raw('COUNT(*) as submit_count'))
-            ->get()
-            ->pluck('submit_count', 'pcl_email');
-
-        // Get kecamatans for each PCL from existing data
-        $kecamatanByEmail = PclProgress::select('email', 'kecamatan')
-            ->distinct()
-            ->get()
-            ->groupBy('email')
-            ->map(fn ($items) => $items->pluck('kecamatan')->filter()->unique()->values()->toArray());
-
-        // Save PCL daily submits - iterate ALL PCL emails, including those with 0 submit
-        $dataDate = now()->format('Y-m-d');
-        foreach ($allPclEmails as $pclEmail) {
-            $pclEmailLower = strtolower($pclEmail);
-            $dailySubmit = $pclDailyCounts[$pclEmailLower] ?? 0;
-            $kecamatans = $kecamatanByEmail->get($pclEmailLower, []);
-
-            PclDailySubmit::updateOrCreate(
-                ['email' => $pclEmailLower, 'data_date' => $dataDate],
-                [
-                    'name' => $officerNames[$pclEmailLower] ?? null,
-                    'kecamatan' => $kecamatans,
-                    'daily_submit' => $dailySubmit,
-                    'total_submit' => $dailySubmit,
-                    'target_met' => $dailySubmit >= 10,
-                ]
-            );
-        }
-    }
-
-    /**
-     * Calculate daily submits for PML from assignment history.
-     */
-    private function calculatePmlDailySubmitsFromHistory(
-        int $importId,
-        $rangeStart,
-        $rangeEnd,
-        array $officerNames,
-        array $pclCounts
-    ): void {
-        // Get all assignment history records for this import
-        $assignmentIds = AssignmentHistoryStatus::where('import_id', $importId)
-            ->pluck('id')
-            ->toArray();
-
-        if (empty($assignmentIds)) {
-            return;
-        }
-
-        // Count REJECT/REVOKE statuses within the range for each PML
-        $pmlRejectCounts = DB::table('assignment_history_status_items')
-            ->join('assignment_history_statuses', 'assignment_history_status_items.assignment_history_status_id', '=', 'assignment_history_statuses.id')
-            ->whereIn('assignment_history_statuses.id', $assignmentIds)
-            ->whereBetween('assignment_history_status_items.tanggal', [$rangeStart, $rangeEnd])
-            ->where(function ($query) {
-                $query->where('assignment_history_status_items.status', 'LIKE', '%REJECT%')
-                    ->orWhere('assignment_history_status_items.status', 'LIKE', '%reject%')
-                    ->orWhere('assignment_history_status_items.status', 'LIKE', '%REVOKE%')
-                    ->orWhere('assignment_history_status_items.status', 'LIKE', '%revoke%');
-            })
-            ->groupBy('assignment_history_statuses.pml_email')
-            ->select('assignment_history_statuses.pml_email', DB::raw('COUNT(*) as reject_count'))
-            ->get()
-            ->pluck('reject_count', 'pml_email');
-
-        // Count APPROVE statuses within the range for each PML
-        $pmlApproveCounts = DB::table('assignment_history_status_items')
-            ->join('assignment_history_statuses', 'assignment_history_status_items.assignment_history_status_id', '=', 'assignment_history_statuses.id')
-            ->whereIn('assignment_history_statuses.id', $assignmentIds)
-            ->whereBetween('assignment_history_status_items.tanggal', [$rangeStart, $rangeEnd])
-            ->where(function ($query) {
-                $query->where('assignment_history_status_items.status', 'LIKE', '%APPROVE%')
-                    ->orWhere('assignment_history_status_items.status', 'LIKE', '%approve%');
-            })
-            ->groupBy('assignment_history_statuses.pml_email')
-            ->select('assignment_history_statuses.pml_email', DB::raw('COUNT(*) as approve_count'))
-            ->get()
-            ->pluck('approve_count', 'pml_email');
-
-        // Get all PML emails from the history data
-        $allPmlEmails = AssignmentHistoryStatus::where('import_id', $importId)
-            ->distinct()
-            ->pluck('pml_email')
-            ->toArray();
-
-        // Combine and save PML daily submits
-        $dataDate = now()->format('Y-m-d');
-        foreach ($allPmlEmails as $pmlEmail) {
-            $pmlEmailLower = strtolower($pmlEmail);
-            $dailyReject = $pmlRejectCounts[$pmlEmail] ?? $pmlRejectCounts[$pmlEmailLower] ?? 0;
-            $dailyApprove = $pmlApproveCounts[$pmlEmail] ?? $pmlApproveCounts[$pmlEmailLower] ?? 0;
-            $dailyCombined = $dailyReject + $dailyApprove;
-
-            $pclCount = $pclCounts[$pmlEmailLower] ?? 0;
-            $targetThreshold = 5 * $pclCount;
-            $targetMet = $pclCount > 0 && $dailyCombined >= $targetThreshold;
-
-            PmlDailySubmit::updateOrCreate(
-                ['email' => $pmlEmailLower, 'data_date' => $dataDate],
-                [
-                    'name' => $officerNames[$pmlEmailLower] ?? null,
-                    'daily_reject' => $dailyReject,
-                    'daily_approve' => $dailyApprove,
-                    'daily_combined' => $dailyCombined,
-                    'total_reject' => $dailyReject,
-                    'total_approve' => $dailyApprove,
-                    'pcl_count' => $pclCount,
-                    'target_met' => $targetMet,
-                ]
-            );
-        }
-    }
-
-    /**
-     * Clear assignment history data.
-     */
-    public function clearAssignmentHistoryData(Request $request)
-    {
-        if (! auth()->user()->isAdmin()) {
-            abort(403);
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // Delete monitoring_imports records with type 'assignment_history'
-            // This will cascade delete related assignment_history_statuses and items
-            // due to foreign key constraints
-            $deletedCount = MonitoringImport::where('type', 'assignment_history')->delete();
-
-            // Also truncate any orphaned records (just in case)
-            AssignmentHistoryStatusItem::truncate();
-            AssignmentHistoryStatus::truncate();
-
-            DB::commit();
-
-            return redirect()->back()->with('success', "Data history assignment berhasil dihapus ({$deletedCount} file).");
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return redirect()->back()->with('error', 'Gagal menghapus data: '.$e->getMessage());
-        }
-    }
-
-    /**
-     * Import daily submits from CSV files (alternative to Excel import).
+     * Import daily submits from CSV files.
      */
     public function importDailySubmitsCsv(Request $request)
     {
@@ -1178,7 +719,7 @@ class ImportController extends Controller
         $kecamatansByEmail
     ): int {
         $handle = fopen($file->getPathname(), 'r');
-        $header = fgetcsv($handle);
+        fgetcsv($handle);
 
         $count = 0;
         while (($row = fgetcsv($handle)) !== false) {
@@ -1220,7 +761,7 @@ class ImportController extends Controller
         array $pclCounts
     ): int {
         $handle = fopen($file->getPathname(), 'r');
-        $header = fgetcsv($handle);
+        fgetcsv($handle);
 
         $count = 0;
         while (($row = fgetcsv($handle)) !== false) {
@@ -1260,42 +801,5 @@ class ImportController extends Controller
         fclose($handle);
 
         return $count;
-    }
-}
-
-/**
- * Filter for reading specific rows in chunks from a spreadsheet.
- * This allows processing large Excel files without loading everything into memory.
- */
-class ChunkReadFilter implements IReadFilter
-{
-    private int $startRow = 0;
-
-    private int $endRow = 0;
-
-    private int $startColumn = 1;
-
-    private int $endColumn = 50;
-
-    public function __construct(int $startRow = 0, int $endRow = 0, int $startColumn = 1, int $endColumn = 50)
-    {
-        $this->startRow = $startRow;
-        $this->endRow = $endRow;
-        $this->startColumn = $startColumn;
-        $this->endColumn = $endColumn;
-    }
-
-    public function readCell(string $columnAddress, int $row, string $worksheetName = ''): bool
-    {
-        // Only read rows within the range
-        if ($row >= $this->startRow && $row <= $this->endRow) {
-            // Only read columns within the range
-            $columnIndex = Coordinate::columnIndexFromString($columnAddress);
-            if ($columnIndex >= $this->startColumn && $columnIndex <= $this->endColumn) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
