@@ -23,6 +23,19 @@
                 </div>
             </div>
 
+            <div class="pcl-stat-card pcl-stat-card--draft">
+                <div class="pcl-stat-card__icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                </div>
+                <div class="pcl-stat-card__content">
+                    <span class="pcl-stat-card__value">{{ number_format($pclTotals['draft']) }}</span>
+                    <span class="pcl-stat-card__label">Draft</span>
+                </div>
+            </div>
+
             <div class="pcl-stat-card pcl-stat-card--submit">
                 <div class="pcl-stat-card__icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -149,6 +162,7 @@
                             <th>No</th>
                             <th>Nama PCL</th>
                             <th>Open</th>
+                            <th>Draft</th>
                             <th>Submit</th>
                             <th>Reject + Revoke</th>
                             <th>Approve</th>
@@ -179,6 +193,7 @@
                                 <td class="pcl-table__no">{{ $rowNumber }}</td>
                                 <td class="pcl-table__name">{{ $pcl['name'] }}</td>
                                 <td class="pcl-table__open">{{ $pcl['open'] }}</td>
+                                <td class="pcl-table__draft">{{ $pcl['draft'] }}</td>
                                 <td class="pcl-table__submit">{{ $pcl['submit'] }}</td>
                                 <td class="pcl-table__reject">{{ $pcl['reject'] }}</td>
                                 <td class="pcl-table__completed">{{ $pcl['approve'] }}</td>

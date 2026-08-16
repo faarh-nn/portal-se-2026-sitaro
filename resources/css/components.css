@@ -6025,6 +6025,11 @@ ul, ol {
     color: #10B981;
 }
 
+.pcl-stat-card--draft .pcl-stat-card__icon {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #F59E0B;
+}
+
 .pcl-stat-card__content {
     display: flex;
     flex-direction: column;
@@ -6314,6 +6319,14 @@ ul, ol {
 .pcl-table__open {
     font-weight: 600;
     background-color: rgba(0, 166, 251, 0.1);
+    padding: 4px 8px;
+    border-radius: var(--rounded-md);
+}
+
+.pcl-table__draft {
+    font-weight: 600;
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #D97706;
     padding: 4px 8px;
     border-radius: var(--rounded-md);
 }

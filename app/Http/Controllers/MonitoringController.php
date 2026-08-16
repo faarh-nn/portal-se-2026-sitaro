@@ -109,6 +109,7 @@ class MonitoringController extends Controller
             ->selectRaw('
                 email,
                 SUM(open) as open,
+                SUM(draft) as draft,
                 SUM(submit) as submit,
                 SUM(reject) as reject,
                 SUM(approve) as approve
@@ -143,6 +144,7 @@ class MonitoringController extends Controller
                 'name' => $pclName,
                 'email' => $pcl->email,
                 'open' => $pcl->open,
+                'draft' => $pcl->draft,
                 'submit' => $pcl->submit,
                 'reject' => $pcl->reject,
                 'approve' => $pcl->approve,
@@ -155,6 +157,7 @@ class MonitoringController extends Controller
         // Calculate PCL totals
         $pclTotals = [
             'open' => $pclProgressData->sum('open'),
+            'draft' => $pclProgressData->sum('draft'),
             'submit' => $pclProgressData->sum('submit'),
             'reject' => $pclProgressData->sum('reject'),
             'approve' => $pclProgressData->sum('approve'),
@@ -308,6 +311,7 @@ class MonitoringController extends Controller
             ->selectRaw('
                 email,
                 SUM(open) as open,
+                SUM(draft) as draft,
                 SUM(submit) as submit,
                 SUM(reject) as reject,
                 SUM(approve) as approve
@@ -338,6 +342,7 @@ class MonitoringController extends Controller
                 'name' => $pclName,
                 'email' => $pcl->email,
                 'open' => $pcl->open,
+                'draft' => $pcl->draft,
                 'submit' => $pcl->submit,
                 'reject' => $pcl->reject,
                 'approve' => $pcl->approve,
@@ -536,6 +541,7 @@ class MonitoringController extends Controller
             ->selectRaw('
                 email,
                 SUM(open) as open,
+                SUM(draft) as draft,
                 SUM(submit) as submit,
                 SUM(reject) as reject,
                 SUM(approve) as approve
@@ -568,6 +574,7 @@ class MonitoringController extends Controller
                 'nama' => $pclName,
                 'email' => $pcl->email,
                 'open' => $pcl->open,
+                'draft' => $pcl->draft,
                 'submit' => $pcl->submit,
                 'reject' => $pcl->reject,
                 'approve' => $pcl->approve,
@@ -579,14 +586,15 @@ class MonitoringController extends Controller
         }
 
         // Create CSV content
-        $csvContent = "No,Nama PCL,Email,Open,Submit,Reject,Approve,Target,PML,Progress (%)\n";
+        $csvContent = "No,Nama PCL,Email,Open,Draft,Submit,Reject,Approve,Target,PML,Progress (%)\n";
         foreach ($pclData as $row) {
             $csvContent .= sprintf(
-                "%d,%s,%s,%d,%d,%d,%d,%d,%s,%.1f\n",
+                "%d,%s,%s,%d,%d,%d,%d,%d,%d,%s,%.1f\n",
                 $row['no'],
                 '"'.str_replace('"', '""', $row['nama']).'"',
                 $row['email'],
                 $row['open'],
+                $row['draft'],
                 $row['submit'],
                 $row['reject'],
                 $row['approve'],
