@@ -7,6 +7,7 @@
         <td class="pcl-table__no">{{ $rowNumber }}</td>
         <td class="pcl-table__name">{{ $pcl['name'] }}</td>
         <td class="pcl-table__open">{{ $pcl['open'] }}</td>
+        <td class="pcl-table__draft">{{ $pcl['draft'] }}</td>
         <td class="pcl-table__submit">{{ $pcl['submit'] }}</td>
         <td class="pcl-table__reject">{{ $pcl['reject'] }}</td>
         <td class="pcl-table__completed">{{ $pcl['approve'] }}</td>
